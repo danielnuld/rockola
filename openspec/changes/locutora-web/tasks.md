@@ -27,5 +27,5 @@
 
 - [x] 5.1 `flutter analyze` y `flutter test` en verde
 - [ ] 5.2 En Chrome contra Giulia real (tras `ruta-radio`): sintonizar, oír la apertura y una entrada entre canciones, "Menos charla", "Cambiar el rumbo", y apagar el servidor a mitad para ver que sigue la música
-- [ ] 5.3 IPA compilado (en iOS no cambia nada visible)
+- [x] 5.3 IPA compilado (en iOS no cambia nada visible)
 - [ ] 5.4 Corregir en el lienzo lo que haya cambiado

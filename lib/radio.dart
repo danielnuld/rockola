@@ -106,6 +106,9 @@ class SesionRadio extends ChangeNotifier {
   var hora = <MediaItem>[];
   var pocaCharla = false;
   var rumbo = 0;
+
+  /// Entre tocar Sintonizar y que suene: mezclas y apertura pueden tardar ~8 s.
+  var sintonizando = false;
   bool locutorCaido = false;
   StreamSubscription<PlaybackState>? _sub;
   final _pedidas = <String>{};
@@ -127,21 +130,30 @@ class SesionRadio extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> sintonizar(List<Mezcla> mezclas) async {
-    hora = [for (final c in horaDeRadio(mezclas, rumbo)) cancion(jf, c)];
-    if (hora.isEmpty) return;
-    _pedidas.clear();
-    _entradas = 0;
-    _hora++;
-    await _sub?.cancel();
-    // La apertura espera poco: mejor empezar sin locutor que con silencio.
-    final apertura = await _pedir(null, hora.first).timeout(const Duration(seconds: 8), onTimeout: () => null);
-    await reproducir([?apertura, ...hora], 0);
-    _sub = player.playbackState.listen(_estado);
+  /// Acepta las mezclas aun sin resolver: el aviso de "sintonizando" sale antes
+  /// de esperarlas, que tambien cuenta.
+  Future<void> sintonizar(FutureOr<List<Mezcla>> mezclas) async {
+    if (sintonizando) return;
+    sintonizando = true;
     notifyListeners();
+    try {
+      hora = [for (final c in horaDeRadio(await mezclas, rumbo)) cancion(jf, c)];
+      if (hora.isEmpty) return;
+      _pedidas.clear();
+      _entradas = 0;
+      _hora++;
+      await _sub?.cancel();
+      // La apertura espera poco: mejor empezar sin locutor que con silencio.
+      final apertura = await _pedir(null, hora.first).timeout(const Duration(seconds: 8), onTimeout: () => null);
+      await reproducir([?apertura, ...hora], 0);
+      _sub = player.playbackState.listen(_estado);
+    } finally {
+      sintonizando = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> cambiarRumbo(List<Mezcla> mezclas) {
+  Future<void> cambiarRumbo(FutureOr<List<Mezcla>> mezclas) {
     rumbo++;
     return sintonizar(mezclas);
   }
@@ -301,12 +313,20 @@ class _RadioPageState extends State<RadioPage> {
       ],
       const SizedBox(height: 20),
       Wrap(spacing: 12, runSpacing: 12, children: [
-        if (!enRadio)
+        if (!enRadio || radio.sintonizando)
           FilledButton.icon(
-            style: FilledButton.styleFrom(backgroundColor: ambar, foregroundColor: tinta, minimumSize: const Size(0, 48)),
-            onPressed: () async => radio.sintonizar(await widget.mezclas),
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Sintonizar', style: TextStyle(fontWeight: FontWeight.w700)),
+            style: FilledButton.styleFrom(
+              backgroundColor: ambar,
+              foregroundColor: tinta,
+              disabledBackgroundColor: ambar.withValues(alpha: 0.6),
+              disabledForegroundColor: tinta,
+              minimumSize: const Size(0, 48),
+            ),
+            onPressed: radio.sintonizando ? null : () => radio.sintonizar(widget.mezclas),
+            icon: radio.sintonizando
+                ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.5, color: tinta))
+                : const Icon(Icons.play_arrow_rounded),
+            label: Text(radio.sintonizando ? 'Sintonizando…' : 'Sintonizar', style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
         FilterChip(
           label: const Text('Menos charla'),
@@ -315,10 +335,16 @@ class _RadioPageState extends State<RadioPage> {
         ),
         OutlinedButton(
           style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
-          onPressed: () async => radio.cambiarRumbo(await widget.mezclas),
+          onPressed: radio.sintonizando ? null : () => radio.cambiarRumbo(widget.mezclas),
           child: const Text('Cambiar el rumbo'),
         ),
       ]),
+      if (radio.sintonizando)
+        Padding(
+          padding: const EdgeInsets.only(top: 14),
+          child: Text(radio.locutor == null ? 'Armando la hora…' : '$nombre prepara la apertura…',
+              style: const TextStyle(color: textoSuave)),
+        ),
       if (enRadio && despues.isNotEmpty) ...[
         const SizedBox(height: 28),
         const Text('EN LA ROTACIÓN', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1, color: textoSuave)),

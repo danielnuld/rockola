@@ -175,6 +175,28 @@ void main() {
     expect(find.text('EN LA ROTACIÓN'), findsOneWidget);
   });
 
+  testWidgets('mientras sintoniza, el boton lo dice y no se puede pulsar dos veces', (tester) async {
+    SharedPreferences.setMockInitialValues({'locutor': 'http://loc'});
+    final r = SesionRadio(jf, cliente: s.cliente);
+    addTearDown(r.dispose);
+    await tester.pumpWidget(MaterialApp(theme: tema, home: RadioPage(r, mezclas: Future.value(mezclas))));
+    await tester.pumpAndSettle();
+
+    s.espera = Completer(); // la apertura tarda
+    await tester.tap(find.text('Sintonizar'));
+    await tester.pump();
+    expect(find.text('Sintonizando…'), findsOneWidget);
+    expect(find.text('Giulia prepara la apertura…'), findsOneWidget);
+    await tester.tap(find.text('Sintonizando…'));
+    await tester.pump();
+
+    s.espera!.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Sintonizando…'), findsNothing);
+    expect(s.pedidos, hasLength(1), reason: 'el segundo toque no pidio otra apertura');
+    expect(find.text('«Entrada 1»'), findsOneWidget);
+  });
+
   testWidgets('Ajustes guarda el servidor al escribir, sin pulsar el boton', (tester) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(MaterialApp(theme: tema, home: const AjustesPage()));

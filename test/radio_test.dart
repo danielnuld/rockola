@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:rockola/ajustes.dart';
 import 'package:rockola/mezclas.dart';
 import 'package:rockola/player.dart';
 import 'package:rockola/radio.dart';
@@ -155,5 +156,14 @@ void main() {
     expect(find.text('SIGUE'), findsOneWidget);
     expect(find.text('Canción a0'), findsNWidgets(2), reason: 'en "Sigue" y en la rotacion');
     expect(find.text('EN LA ROTACIÓN'), findsOneWidget);
+  });
+
+  testWidgets('Ajustes guarda el servidor al escribir, sin pulsar el boton', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(MaterialApp(theme: tema, home: const AjustesPage()));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'http://100.102.40.65:8787 ');
+    await tester.pumpAndSettle();
+    expect((await SharedPreferences.getInstance()).getString('locutor'), 'http://100.102.40.65:8787');
   });
 }

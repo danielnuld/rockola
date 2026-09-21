@@ -17,8 +17,11 @@ Cliente de musica para Jellyfin en Flutter. iPhone primero, web para iterar la U
 
 ## Comandos
 
-- `flutter run -d chrome --web-port 5000`: la UI en el navegador. Jellyfin
-  (`http://100.102.40.65:8096` por Tailscale) tiene CORS abierto.
+- `flutter run -d web-server --web-port 5000` y abrir `http://localhost:5000` en el
+  Chrome de siempre. No `-d chrome`: ese abre un perfil temporal en cada arranque y
+  se pierde lo guardado (sesión, servidor del locutor). Jellyfin
+  (`http://100.102.40.65:8096` por Tailscale) tiene CORS abierto; el locutor
+  (`http://100.102.40.65:8787`) solo para el origen `http://localhost:5000`.
 - `flutter analyze` y `flutter test` antes de cada commit.
 - `gh workflow run ios.yml`: IPA sin firmar como artefacto, para Sideloadly.
 

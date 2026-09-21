@@ -52,6 +52,8 @@ class _AjustesPageState extends State<AjustesPage> {
             decoration: const InputDecoration(labelText: 'URL', hintText: 'http://100.102.40.65:8787'),
             keyboardType: TextInputType.url,
             autocorrect: false,
+            // Se guarda al escribir: salir sin pulsar el boton no lo pierde.
+            onChanged: (v) async => (await SharedPreferences.getInstance()).setString('locutor', v.trim()),
             onSubmitted: (_) => _probar(),
           ),
           const SizedBox(height: 12),

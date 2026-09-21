@@ -56,11 +56,19 @@ class _ArmazonState extends State<Armazon> {
   }
 
   void _elegir(int i) {
+    // Al entrar a la radio relee el servidor: pudo cambiar en Ajustes, y la
+    // pantalla se construyó al arrancar (IndexedStack), antes de configurarlo.
+    if (i == 3) unawaited(_radio.configurar());
     if (i == _actual) {
       _navs[i].currentState?.popUntil((r) => r.isFirst);
     } else {
       setState(() => _actual = i);
     }
+  }
+
+  Future<void> _ajustes() async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AjustesPage()));
+    await _radio.configurar();
   }
 
   void _abrirAlbum(Item album) {
@@ -97,7 +105,11 @@ class _ArmazonState extends State<Armazon> {
                   child: Column(children: [
                     Expanded(
                       child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                        SizedBox(width: 320, child: Lateral(widget.jf, albumes: _albumes, actual: _actual, elegir: _elegir, abrirAlbum: _abrirAlbum)),
+                        SizedBox(
+                          width: 320,
+                          child: Lateral(widget.jf,
+                              albumes: _albumes, actual: _actual, elegir: _elegir, abrirAlbum: _abrirAlbum, ajustes: _ajustes),
+                        ),
                         const SizedBox(width: 8),
                         Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(10), child: pila)),
                       ]),
@@ -153,13 +165,15 @@ class Pestanas extends StatelessWidget {
 }
 
 class Lateral extends StatelessWidget {
-  const Lateral(this.jf, {super.key, required this.albumes, required this.actual, required this.elegir, required this.abrirAlbum});
+  const Lateral(this.jf,
+      {super.key, required this.albumes, required this.actual, required this.elegir, required this.abrirAlbum, required this.ajustes});
 
   final Jellyfin jf;
   final Future<List<Item>> albumes;
   final int actual;
   final ValueChanged<int> elegir;
   final ValueChanged<Item> abrirAlbum;
+  final VoidCallback ajustes;
 
   @override
   Widget build(BuildContext context) => Column(children: [
@@ -189,7 +203,7 @@ class Lateral extends StatelessWidget {
                 ),
               ),
             InkWell(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AjustesPage())),
+              onTap: ajustes,
               child: const SizedBox(
                 height: 44,
                 child: Row(children: [

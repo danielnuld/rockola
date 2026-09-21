@@ -25,5 +25,5 @@
 
 - [x] 5.1 `flutter analyze` y `flutter test` en verde
 - [ ] 5.2 En Chrome con la sesión de Daniel: crear, añadir, reordenar, renombrar, quitar y borrar, y comprobar en Jellyfin que queda igual (mover y renombrar no se pudieron probar con la clave del servidor)
-- [ ] 5.3 IPA compilado
+- [x] 5.3 IPA compilado
 - [ ] 5.4 En el lienzo, el filtro Listas y el menú por canción si hace falta

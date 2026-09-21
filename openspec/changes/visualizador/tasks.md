@@ -27,6 +27,6 @@
 ## 5. Cierre
 
 - [x] 5.1 `flutter analyze`, `flutter test` y `huellas.py --check` en verde
-- [ ] 5.2 En Chrome con Daniel: los cuatro estilos con canciones reales, que se note el ritmo
-- [ ] 5.3 IPA compilado
-- [ ] 5.4 En el lienzo, el botón del visualizador y una pantalla del visualizador
+- [x] 5.2 En Chrome con Daniel: los cuatro estilos con canciones reales, que se note el ritmo
+- [x] 5.3 IPA compilado
+- [x] 5.4 En el lienzo, el botón del visualizador y una pantalla del visualizador

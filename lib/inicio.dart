@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'biblioteca.dart';
+import 'descargas.dart';
+import 'descargas_pantalla.dart';
 import 'jellyfin.dart';
 import 'tema.dart';
 
@@ -34,9 +36,8 @@ class Inicio extends StatefulWidget {
 }
 
 class _InicioState extends State<Inicio> {
-  late Future<List<Item>> _recientes = _pedir();
-
-  Future<List<Item>> _pedir() => widget.jf.recientes().then(albumesRecientes);
+  late Future<List<Item>> _recientes = widget.jf.recientes();
+  var _soloDescargado = false;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -44,45 +45,69 @@ class _InicioState extends State<Inicio> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
-            Text(saludo(DateTime.now()), style: Theme.of(context).textTheme.headlineMedium),
+            Row(children: [
+              Expanded(child: Text(saludo(DateTime.now()), style: Theme.of(context).textTheme.headlineMedium)),
+              if (descargas != null)
+                IconButton(
+                  tooltip: 'Descargas',
+                  style: IconButton.styleFrom(backgroundColor: superficie, fixedSize: const Size.square(44)),
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DescargasPage(widget.jf))),
+                  icon: const Icon(Icons.download_for_offline_outlined),
+                ),
+            ]),
+            if (descargas != null) ...[
+              const SizedBox(height: 16),
+              Row(children: [
+                Chip2('Todo', activo: !_soloDescargado, alTocar: () => setState(() => _soloDescargado = false)),
+                const SizedBox(width: 8),
+                Chip2('Descargado', activo: _soloDescargado, alTocar: () => setState(() => _soloDescargado = true)),
+              ]),
+            ],
             const SizedBox(height: 20),
             _TarjetaRadio(widget.sintonizar),
             const SizedBox(height: 24),
             FutureBuilder(
               future: _recientes,
-              builder: (context, snap) {
+              builder: (context, snap) => conDescargas((context) {
+                if (_soloDescargado) {
+                  final bajados = descargas!.albumes;
+                  if (bajados.isEmpty) return const Text('Todavía no has descargado nada', style: TextStyle(color: textoSuave));
+                  final ids = {for (final b in bajados) b['Id']};
+                  final recientes = [for (final a in albumesRecientes(snap.data ?? [], max: 1000)) if (ids.contains(a['Id'])) a];
+                  // Sin historial (o sin red) se ven todos los descargados.
+                  return _volver(recientes.isEmpty ? bajados : recientes.take(6).toList());
+                }
                 if (snap.hasError) {
                   return Row(children: [
                     Expanded(child: Text('No pude traer tu historial: ${snap.error}', style: const TextStyle(color: textoSuave))),
-                    TextButton(onPressed: () => setState(() => _recientes = _pedir()), child: const Text('Reintentar')),
+                    TextButton(onPressed: () => setState(() => _recientes = widget.jf.recientes()), child: const Text('Reintentar')),
                   ]);
                 }
-                final albumes = snap.data ?? [];
-                if (albumes.isEmpty) return const SizedBox.shrink();
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Volver a escuchar', style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 10),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 320,
-                        mainAxisExtent: 56,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      itemCount: albumes.length,
-                      itemBuilder: (context, i) => _Reciente(widget.jf, albumes[i]),
-                    ),
-                  ],
-                );
-              },
+                return _volver(albumesRecientes(snap.data ?? []));
+              }),
             ),
           ],
         ),
       );
+
+  Widget _volver(List<Item> albumes) => albumes.isEmpty
+      ? const SizedBox.shrink()
+      : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Volver a escuchar', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 10),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 320,
+              mainAxisExtent: 56,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: albumes.length,
+            itemBuilder: (context, i) => _Reciente(widget.jf, albumes[i]),
+          ),
+        ]);
 }
 
 class _TarjetaRadio extends StatelessWidget {

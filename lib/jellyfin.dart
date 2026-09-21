@@ -4,6 +4,26 @@ import 'package:http/http.dart' as http;
 
 typedef Item = Map<String, dynamic>;
 
+/// Calidad de descarga. Las AAC las comprime Jellyfin en el servidor.
+enum Calidad {
+  original('Original', 'El archivo tal cual', 0),
+  alta('Alta', 'AAC 256 kbps', 256000),
+  normal('Normal', 'AAC 160 kbps', 160000),
+  ahorro('Ahorro', 'AAC 96 kbps', 96000);
+
+  const Calidad(this.nombre, this.detalle, this.bps);
+  final String nombre, detalle;
+  final int bps;
+}
+
+/// Lo que ocuparia toda la biblioteca. Medido: las AAC de Jellyfin quedan a 1–2 %
+/// de la tasa nominal, asi que duracion × tasa basta.
+int estimar(({int bytes, Duration dura}) total, Calidad c) =>
+    c == Calidad.original ? total.bytes : total.dura.inSeconds * c.bps ~/ 8;
+
+/// Unidades decimales, como las que da el sistema: "190 MB", "2.8 GB".
+String tamano(int bytes) => bytes < 1e9 ? '${(bytes / 1e6).round()} MB' : '${(bytes / 1e9).toStringAsFixed(1)} GB';
+
 class Jellyfin {
   Jellyfin(this.url, this.token, this.userId, {http.Client? cliente}) : _http = cliente ?? http.Client();
 
@@ -97,6 +117,35 @@ class Jellyfin {
         'Filters': 'IsPlayed',
         'Limit': '60',
       });
+
+  /// Tamano original y duracion de toda la biblioteca, para estimar descargas.
+  Future<({int bytes, Duration dura})> totales() async {
+    final canciones = await _items({'IncludeItemTypes': 'Audio', 'Recursive': 'true', 'Fields': 'MediaSources'});
+    var bytes = 0, ticks = 0;
+    for (final c in canciones) {
+      bytes += ((c['MediaSources'] as List?)?.firstOrNull?['Size'] as int?) ?? 0;
+      ticks += (c['RunTimeTicks'] as int?) ?? 0;
+    }
+    return (bytes: bytes, dura: Duration(microseconds: ticks ~/ 10));
+  }
+
+  /// URL y extension de una descarga. La extension importa: AVPlayer reconoce el
+  /// formato de un archivo local por ella.
+  (String, String) descarga(Item cancion, Calidad c) {
+    final id = cancion['Id'];
+    if (c == Calidad.original) {
+      final ext = '${cancion['Container'] ?? 'mp3'}'.split(',').first;
+      return ('$url/Items/$id/Download?api_key=$token', ext);
+    }
+    // Container=m4a: fuerza la conversion salvo que el original ya sea AAC por
+    // debajo de la tasa pedida.
+    return (
+      '$url/Audio/$id/universal?UserId=$userId&DeviceId=rockola&api_key=$token'
+          '&MaxStreamingBitrate=${c.bps}&Container=m4a&TranscodingContainer=m4a'
+          '&TranscodingProtocol=http&AudioCodec=aac',
+      'm4a',
+    );
+  }
 
   String image(String id) => '$url/Items/$id/Images/Primary?maxHeight=400&api_key=$token';
 

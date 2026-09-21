@@ -1,6 +1,8 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 
+import 'descargas.dart';
+import 'descargas_pantalla.dart';
 import 'jellyfin.dart';
 import 'player.dart';
 import 'tema.dart';
@@ -9,14 +11,22 @@ import 'tema.dart';
 /// Jellyfin van en `extras`, que son los que usan el favorito y la portada.
 MediaItem cancion(Jellyfin jf, Item t) {
   final albumId = (t['AlbumId'] ?? t['Id']) as String;
+  // Descargada: suena del archivo, haya red o no.
+  final local = descargas?.archivo(t['Id']);
+  final portada = descargas?.portada(albumId);
   return MediaItem(
-    id: jf.stream(t['Id']),
+    id: local != null ? Uri.file(local.ruta).toString() : jf.stream(t['Id']),
     title: t['Name'] ?? '',
     artist: (t['Artists'] as List?)?.join(', ') ?? t['AlbumArtist'],
     album: t['Album'],
-    artUri: Uri.parse(jf.image(albumId)),
+    artUri: portada != null ? Uri.file(portada) : Uri.parse(jf.image(albumId)),
     duration: t['RunTimeTicks'] == null ? null : Duration(microseconds: (t['RunTimeTicks'] as int) ~/ 10),
-    extras: {'itemId': t['Id'], 'albumId': albumId, 'fav': t['UserData']?['IsFavorite'] ?? false},
+    extras: {
+      'itemId': t['Id'],
+      'albumId': albumId,
+      'fav': t['UserData']?['IsFavorite'] ?? false,
+      if (local != null) 'local': local.calidad.detalle,
+    },
   );
 }
 
@@ -40,7 +50,7 @@ String lineaAlbum(int? anio, int canciones, Duration dura) => [
       '${dura.inMinutes} min',
     ].join(' · ');
 
-enum _Filtro { albumes, artistas }
+enum _Filtro { albumes, artistas, descargado }
 
 class Biblioteca extends StatefulWidget {
   const Biblioteca(this.jf, {super.key});
@@ -65,7 +75,8 @@ class _BibliotecaState extends State<Biblioteca> {
   Widget build(BuildContext context) => Scaffold(
         body: SafeArea(
           bottom: false,
-          child: FutureBuilder(
+          // conDescargas: el indicador de cada fila sigue a las descargas en curso.
+          child: conDescargas((context) => FutureBuilder(
             future: _datos,
             builder: (context, snap) {
               final cabecera = <Widget>[
@@ -75,14 +86,25 @@ class _BibliotecaState extends State<Biblioteca> {
                   Chip2('Álbumes', activo: _filtro == _Filtro.albumes, alTocar: () => setState(() => _filtro = _Filtro.albumes)),
                   const SizedBox(width: 8),
                   Chip2('Artistas', activo: _filtro == _Filtro.artistas, alTocar: () => setState(() => _filtro = _Filtro.artistas)),
+                  if (descargas != null) ...[
+                    const SizedBox(width: 8),
+                    Chip2('Descargado', activo: _filtro == _Filtro.descargado, alTocar: () => setState(() => _filtro = _Filtro.descargado)),
+                  ],
                 ]),
               ];
-              if (snap.hasError) return _lista([...cabecera, const SizedBox(height: 24), Text('${snap.error}')]);
-              if (!snap.hasData) return _lista([...cabecera, const SizedBox(height: 48), const Center(child: CircularProgressIndicator())]);
+              // Descargado no depende de Jellyfin: sin red es lo unico que funciona.
+              if (_filtro != _Filtro.descargado) {
+                if (snap.hasError) return _lista([...cabecera, const SizedBox(height: 24), Text('${snap.error}')]);
+                if (!snap.hasData) return _lista([...cabecera, const SizedBox(height: 48), const Center(child: CircularProgressIndicator())]);
+              }
 
-              final [albumes, artistas, historial] = snap.data!;
-              final esAlbum = _filtro == _Filtro.albumes;
-              var items = esAlbum ? albumes : artistas;
+              final [albumes, artistas, historial] = snap.data ?? const [<Item>[], <Item>[], <Item>[]];
+              final esAlbum = _filtro != _Filtro.artistas;
+              var items = switch (_filtro) {
+                _Filtro.albumes => albumes,
+                _Filtro.artistas => artistas,
+                _Filtro.descargado => descargas!.albumes,
+              };
               if (!_aZ) {
                 items = esAlbum
                     ? porRecientes(items, [for (final c in historial) '${c['AlbumId']}'], (a) => '${a['Id']}')
@@ -111,6 +133,7 @@ class _BibliotecaState extends State<Biblioteca> {
                           jf: widget.jf,
                           item: a,
                           sub: 'Álbum · ${a['AlbumArtist'] ?? ''}',
+                          descargado: descargas?.completo(a['Id']) ?? false,
                           alTocar: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AlbumPage(widget.jf, a))),
                         )
                       : Fila(
@@ -122,7 +145,7 @@ class _BibliotecaState extends State<Biblioteca> {
                         ),
               ]);
             },
-          ),
+          )),
         ),
       );
 
@@ -160,13 +183,21 @@ class Chip2 extends StatelessWidget {
 
 /// Una fila de 64 px con portada de 56: album o artista.
 class Fila extends StatelessWidget {
-  const Fila({super.key, required this.jf, required this.item, required this.sub, required this.alTocar, this.redonda = false});
+  const Fila({
+    super.key,
+    required this.jf,
+    required this.item,
+    required this.sub,
+    required this.alTocar,
+    this.redonda = false,
+    this.descargado = false,
+  });
 
   final Jellyfin jf;
   final Item item;
   final String sub;
   final VoidCallback alTocar;
-  final bool redonda;
+  final bool redonda, descargado;
 
   @override
   Widget build(BuildContext context) => InkWell(
@@ -183,7 +214,13 @@ class Fila extends StatelessWidget {
               child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(item['Name'] ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 3),
-                Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: textoSuave)),
+                Row(children: [
+                  if (descargado) ...[
+                    const Icon(Icons.download_for_offline_rounded, size: 14, color: coral, semanticLabel: 'Descargado'),
+                    const SizedBox(width: 5),
+                  ],
+                  Flexible(child: Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: textoSuave))),
+                ]),
               ]),
             ),
           ]),
@@ -243,7 +280,12 @@ class _AlbumPageState extends State<AlbumPage> {
   static const _tinte = Color(0xFF3A1A12);
 
   Jellyfin get jf => widget.jf;
-  late final _datos = Future.wait([jf.item(widget.album['Id']), jf.tracks(widget.album['Id'])]);
+  // Sin red, un album descargado se abre con lo que se guardo al descargarlo.
+  late final _datos = Future.wait([jf.item(widget.album['Id']), jf.tracks(widget.album['Id'])]).catchError((Object e) {
+    final d = descargas?.entrada(widget.album['Id']);
+    if (d == null) throw e;
+    return <Object>[d['album'], <Item>[for (final p in d['pistas']) p['item']]];
+  });
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -281,6 +323,7 @@ class _AlbumPageState extends State<AlbumPage> {
                   Text(lineaAlbum(a['ProductionYear'] as int?, items.length, dura), style: const TextStyle(fontSize: 13, color: textoSuave)),
                   Row(children: [
                     Corazon(jf, a['Id'], inicial: a['UserData']?['IsFavorite'] ?? false),
+                    if (descargas != null) BotonDescarga(jf, a, pistas),
                     const Spacer(),
                     IconButton(
                       tooltip: 'Aleatorio',

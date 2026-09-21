@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:audio_service/audio_service.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'armazon.dart';
+import 'descargas.dart';
 import 'jellyfin.dart';
 import 'player.dart';
 import 'tema.dart';
@@ -16,6 +22,18 @@ Future<void> main() async {
     builder: Player.new,
     config: const AudioServiceConfig(androidNotificationChannelName: 'Rockola'),
   );
+  if (!kIsWeb) {
+    final red = Connectivity();
+    final d = descargas = await Descargas.abrir(
+      Directory('${(await getApplicationDocumentsDirectory()).path}/descargas'),
+      prefs: prefs,
+      hayWifi: () async {
+        final r = await red.checkConnectivity();
+        return r.contains(ConnectivityResult.wifi) || r.contains(ConnectivityResult.ethernet);
+      },
+    );
+    red.onConnectivityChanged.listen((_) => d.reanudar());
+  }
   runApp(const Rockola());
 }
 

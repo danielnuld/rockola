@@ -155,6 +155,22 @@ class Reproductor extends StatelessWidget {
                       IconButton(tooltip: 'Siguiente', iconSize: 36, onPressed: player.skipToNext, icon: const Icon(Icons.skip_next_rounded)),
                       botonRepetir(),
                     ]),
+                    if (m.extras?['local'] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(color: const Color(0xFF5E3226), borderRadius: BorderRadius.circular(16)),
+                            child: Row(mainAxisSize: MainAxisSize.min, children: [
+                              const Icon(Icons.download_done_rounded, size: 16, color: coral),
+                              const SizedBox(width: 6),
+                              Text('En el iPhone · ${m.extras!['local']}', style: const TextStyle(fontSize: 12)),
+                            ]),
+                          ),
+                        ),
+                      ),
                   ]),
                 ),
               );

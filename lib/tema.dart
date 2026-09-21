@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+
+import 'descargas.dart';
 
 // Los colores del lienzo. El ambar es solo de la radio y la locutora.
 const fondo = Color(0xFF141110);
@@ -53,10 +57,16 @@ class Portada extends StatelessWidget {
   final double radio;
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-        borderRadius: BorderRadius.circular(radio),
-        child: Image.network(url, fit: BoxFit.cover, errorBuilder: (_, _, _) => reemplazo()),
-      );
+  Widget build(BuildContext context) {
+    // La guardada al descargar primero: sin red es la unica que hay.
+    final local = descargas?.portada(id) ?? (url.startsWith('file:') ? Uri.parse(url).toFilePath() : null);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radio),
+      child: local != null
+          ? Image.file(File(local), fit: BoxFit.cover, errorBuilder: (_, _, _) => reemplazo())
+          : Image.network(url, fit: BoxFit.cover, errorBuilder: (_, _, _) => reemplazo()),
+    );
+  }
 
   // ponytail: hashCode de String puede cambiar entre versiones de Dart; solo
   // cambiaria el color, nada se rompe.

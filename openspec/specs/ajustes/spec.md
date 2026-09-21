@@ -23,3 +23,15 @@ Los ajustes SHALL abrirse desde la pantalla de radio y desde el lateral de la we
 - **WHEN** en la radio se toca el botón de ajustes
 - **THEN** se abre Ajustes con el campo del servidor
 
+### Requirement: Servidor de huellas
+Ajustes SHALL tener el campo "Servidor de huellas" (una URL), en la web y en el iPhone,
+guardado al escribir y con una prueba que pide una huella y dice si responde.
+
+#### Scenario: Configurar
+- **WHEN** se escribe `http://100.102.40.65:8788` y se prueba
+- **THEN** se lee "Responde" y la URL queda guardada
+
+#### Scenario: Vacío
+- **WHEN** el campo está vacío
+- **THEN** el visualizador usa la animación que no reacciona
+

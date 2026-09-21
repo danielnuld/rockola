@@ -25,6 +25,6 @@
 ## 5. Cierre
 
 - [x] 5.1 `flutter analyze` y `flutter test` en verde
-- [ ] 5.2 En Chrome con canciones reales: una sincronizada (resalta, centra, saltar) y una plana
+- [x] 5.2 En Chrome con canciones reales: una sincronizada (resalta, centra, saltar) y una plana
 - [x] 5.3 IPA compilado
-- [ ] 5.4 En el lienzo, el botón de letra en el Reproductor
+- [x] 5.4 En el lienzo, el botón de letra en el Reproductor

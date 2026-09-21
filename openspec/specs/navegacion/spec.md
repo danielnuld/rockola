@@ -12,7 +12,7 @@ elegida al abrir.
 - **THEN** muestra la pestaña Inicio
 
 #### Scenario: Pestañas aún vacías
-- **WHEN** se elige Buscar o Radio
+- **WHEN** se elige Radio
 - **THEN** se ve un estado vacío que dice qué habrá ahí, sin errores
 
 ### Requirement: Cada pestaña guarda su recorrido

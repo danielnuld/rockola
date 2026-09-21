@@ -8,6 +8,6 @@ elegida al abrir.
 - **WHEN** la app arranca con una sesión de Jellyfin guardada
 - **THEN** muestra la pestaña Inicio
 
-#### Scenario: Pestaña aún vacía
+#### Scenario: Pestañas aún vacías
 - **WHEN** se elige Radio
 - **THEN** se ve un estado vacío que dice qué habrá ahí, sin errores

@@ -3,7 +3,7 @@
 - [x] 1.1 Bajar las instancias estáticas de Bricolage Grotesque (600, 800) y DM Sans (400, 500, 700) a `assets/fonts/` con su `OFL.txt`, y declararlas en `pubspec.yaml`
 - [x] 1.2 Crear `lib/tema.dart`: colores del lienzo como `const Color` y un `ThemeData` oscuro con las dos familias; `MaterialApp` lo usa con `themeMode: ThemeMode.dark`
 - [x] 1.3 Portada de reemplazo: `Cover` recibe id y nombre, y sin imagen pinta el bloque de color (ocho tonos, `id.hashCode % 8`) con la inicial
-- [ ] 1.4 Comprobar: `flutter analyze` limpio y en Chrome el login y la cuadrícula ya salen con el tema nuevo
+- [x] 1.4 Comprobar: `flutter analyze` limpio y en Chrome el login y la cuadrícula ya salen con el tema nuevo
 
 ## 2. Armazón de navegación
 
@@ -17,7 +17,7 @@
 - [x] 3.1 Rehacer `MiniPlayer` como en la barra del lienzo: fondo `#4A2519`, portada, título, artista, pausa/reproducir con etiqueta de accesibilidad
 - [x] 3.2 Línea de progreso con la posición de `playbackState` (ver design.md) contra la duración del `MediaItem`
 - [x] 3.3 Se muestra solo con cola; sin cola, solo las pestañas
-- [ ] 3.4 Comprobar en Chrome: poner un álbum, ver avanzar el progreso, pausar y reanudar desde la barra
+- [x] 3.4 Comprobar en Chrome: poner un álbum, ver avanzar el progreso, pausar y reanudar desde la barra
 
 ## 4. Inicio
 
@@ -32,10 +32,10 @@
 - [x] 5.1 `LayoutBuilder` a 900 px en el armazón: lateral de 320 px con logo, las cuatro secciones y la lista de la biblioteca; panel principal redondeado; barra del reproductor abajo a todo lo ancho, como **Web · Inicio**
 - [x] 5.2 Barra del reproductor ancha: canción a la izquierda, controles y progreso al centro, volumen a la derecha
 - [x] 5.3 Test de widget: a 1440 px no hay pestañas abajo y sí lateral; a 390 px al revés
-- [ ] 5.4 Comprobar en Chrome: cambiar el ancho de la ventana con música sonando y que no se corte
+- [x] 5.4 Comprobar en Chrome: cambiar el ancho de la ventana con música sonando y que no se corte
 
 ## 6. Cierre
 
 - [x] 6.1 `flutter analyze` y `flutter test` en verde
 - [x] 6.2 `gh workflow run ios.yml` y que el IPA compile
-- [ ] 6.3 Si algo del lienzo no funcionó igual en la app, corregir el lienzo para que siga siendo el plano
+- [x] 6.3 Si algo del lienzo no funcionó igual en la app, corregir el lienzo para que siga siendo el plano

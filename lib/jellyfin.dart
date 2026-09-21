@@ -5,9 +5,10 @@ import 'package:http/http.dart' as http;
 typedef Item = Map<String, dynamic>;
 
 class Jellyfin {
-  Jellyfin(this.url, this.token, this.userId);
+  Jellyfin(this.url, this.token, this.userId, {http.Client? cliente}) : _http = cliente ?? http.Client();
 
   final String url, token, userId;
+  final http.Client _http;
 
   // ponytail: DeviceId fijo, con dos dispositivos del mismo usuario Jellyfin
   // cierra la sesion del otro. Generar uno por instalacion cuando pase.
@@ -27,7 +28,7 @@ class Jellyfin {
   }
 
   Future<List<Item>> _items(Map<String, String> query) async {
-    final r = await http.get(
+    final r = await _http.get(
       Uri.parse('$url/Users/$userId/Items').replace(queryParameters: query),
       headers: {'Authorization': '$_auth, Token="$token"'},
     );
@@ -46,6 +47,17 @@ class Jellyfin {
         'IncludeItemTypes': 'Audio',
         'Recursive': 'true',
         'SortBy': 'ParentIndexNumber,IndexNumber',
+      });
+
+  /// Las ultimas canciones escuchadas. Jellyfin guarda la fecha de reproduccion
+  /// de canciones, no de albumes: los albumes salen de aqui.
+  Future<List<Item>> recientes() => _items({
+        'IncludeItemTypes': 'Audio',
+        'Recursive': 'true',
+        'SortBy': 'DatePlayed',
+        'SortOrder': 'Descending',
+        'Filters': 'IsPlayed',
+        'Limit': '60',
       });
 
   String image(String id) => '$url/Items/$id/Images/Primary?maxHeight=400&api_key=$token';

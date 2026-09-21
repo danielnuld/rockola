@@ -43,7 +43,18 @@ un iPad o una ventana estrecha de escritorio caen donde deben.
 
 **La barra lee de `player` directamente.** `MiniPlayer` ya escucha `mediaItem` y
 `playbackState` del `AudioHandler` global; se rehace su apariencia y se le añade la
-línea de progreso con `AudioService.position`. Nada de gestor de estado nuevo.
+línea de progreso. Nada de gestor de estado nuevo. El progreso sale de
+`playbackState.value.position` cada medio segundo y no de `AudioService.position`,
+que exige el servicio iniciado: así los tests ponen un `BaseAudioHandler` pelado.
+Por lo mismo `player` es un `AudioHandler` y la cola entra por `updateQueue`, el
+método estándar, en vez de un `playAll` propio.
+
+**Sin chips de filtro en Inicio todavía.** El lienzo los trae (Todo, Álbumes,
+Descargado), pero sin descargas ni mezclas no filtran nada, y un control que no hace
+nada es peor que no tenerlo. Llegan con la fase 3.
+
+**La tarjeta dice "Una hora con tu música", no el nombre de la locutora.** El nombre
+es configuración de las fases 5 y 6; hasta entonces la app no sabe cuál es.
 
 **Volver a escuchar = canciones recientes, agrupadas por álbum.** Jellyfin no guarda
 "fecha de reproducción" de álbumes, solo de canciones. Una consulta

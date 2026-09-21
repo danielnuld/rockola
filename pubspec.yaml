@@ -21,3 +21,21 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Empaquetadas y no por google_fonts: la app se tiene que ver igual sin conexion.
+  # Instancias estaticas, licencia OFL al lado.
+  fonts:
+    - family: Bricolage Grotesque
+      fonts:
+        - asset: assets/fonts/BricolageGrotesque-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/BricolageGrotesque-ExtraBold.ttf
+          weight: 800
+    - family: DM Sans
+      fonts:
+        - asset: assets/fonts/DMSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/DMSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/DMSans-Bold.ttf
+          weight: 700

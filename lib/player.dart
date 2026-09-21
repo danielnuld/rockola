@@ -1,6 +1,17 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
+/// El reproductor de la app. Tipo generico para que los tests pongan un
+/// BaseAudioHandler sin plugin de audio detras.
+late final AudioHandler player;
+
+/// Pone la cola y empieza por la cancion `i`.
+Future<void> reproducir(List<MediaItem> items, int i) async {
+  await player.updateQueue(items);
+  await player.skipToQueueItem(i);
+  await player.play();
+}
+
 /// Puente entre just_audio (reproduce) y audio_service (pantalla de bloqueo,
 /// segundo plano, auriculares).
 class Player extends BaseAudioHandler with QueueHandler, SeekHandler {
@@ -14,13 +25,16 @@ class Player extends BaseAudioHandler with QueueHandler, SeekHandler {
   final _p = AudioPlayer();
 
   /// Los `id` de los MediaItem son las URLs de stream.
-  Future<void> playAll(List<MediaItem> items, int start) async {
+  @override
+  Future<void> updateQueue(List<MediaItem> items) async {
     queue.add(items);
-    await _p.setAudioSources(
-      [for (final m in items) AudioSource.uri(Uri.parse(m.id))],
-      initialIndex: start,
-    );
-    await _p.play();
+    await _p.setAudioSources([for (final m in items) AudioSource.uri(Uri.parse(m.id))]);
+  }
+
+  /// audio_service no tiene volumen: va como accion propia, para la barra web.
+  @override
+  Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) async {
+    if (name == 'volumen') await _p.setVolume((extras?['v'] as num).toDouble());
   }
 
   @override

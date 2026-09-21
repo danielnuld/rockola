@@ -1,32 +1,19 @@
-import 'dart:convert';
-
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 import 'package:rockola/armazon.dart';
 import 'package:rockola/inicio.dart';
 import 'package:rockola/jellyfin.dart';
 import 'package:rockola/player.dart';
 import 'package:rockola/tema.dart';
 
-/// Jellyfin de mentira: un album con una cancion, y sin historial.
-Jellyfin jellyfinFalso() => Jellyfin('http://jf', 'tk', 'u', cliente: MockClient((r) async {
-      final q = r.url.queryParameters;
-      final items = switch (q['IncludeItemTypes']) {
-        'MusicAlbum' => [{'Id': 'a1', 'Name': 'Room on Fire', 'AlbumArtist': 'The Strokes'}],
-        'Audio' when q['ParentId'] == 'a1' => [{'Id': 't1', 'Name': 'Reptilia', 'AlbumArtist': 'The Strokes'}],
-        _ => [],
-      };
-      return http.Response(jsonEncode({'Items': items}), 200);
-    }));
+import 'falso.dart';
 
 Future<void> abrir(WidgetTester tester, Size tam) async {
   tester.view.physicalSize = tam;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(MaterialApp(theme: tema, home: Armazon(jellyfinFalso())));
+  await tester.pumpWidget(MaterialApp(theme: tema, home: Armazon(Falso().jf)));
   await tester.pumpAndSettle();
 }
 

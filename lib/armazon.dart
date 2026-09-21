@@ -4,9 +4,11 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 
 import 'biblioteca.dart';
+import 'buscar.dart';
 import 'inicio.dart';
 import 'jellyfin.dart';
 import 'player.dart';
+import 'reproductor.dart';
 import 'tema.dart';
 
 /// Desde este ancho, lateral y barra del reproductor completa en vez de pestañas.
@@ -35,6 +37,8 @@ class Armazon extends StatefulWidget {
 class _ArmazonState extends State<Armazon> {
   int _actual = 0;
   final _navs = List.generate(4, (_) => GlobalKey<NavigatorState>());
+  // Aqui y no en el Lateral: su build corre en cada cambio de seccion.
+  late final _albumes = widget.jf.albums();
 
   void _elegir(int i) {
     if (i == _actual) {
@@ -51,7 +55,7 @@ class _ArmazonState extends State<Armazon> {
 
   Widget _raiz(int i) => switch (i) {
         0 => Inicio(widget.jf, sintonizar: () => _elegir(3)),
-        1 => const Vacio(icono: Icons.search_rounded, titulo: 'Buscar', texto: 'Aquí vas a poder buscar canciones, álbumes y artistas.'),
+        1 => Buscar(widget.jf),
         2 => Biblioteca(widget.jf),
         _ => const Vacio(icono: Icons.podcasts_rounded, titulo: 'Rockola FM', texto: 'La radio con locutora llega pronto.'),
       };
@@ -75,12 +79,12 @@ class _ArmazonState extends State<Armazon> {
                   child: Column(children: [
                     Expanded(
                       child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                        SizedBox(width: 320, child: Lateral(widget.jf, actual: _actual, elegir: _elegir, abrirAlbum: _abrirAlbum)),
+                        SizedBox(width: 320, child: Lateral(widget.jf, albumes: _albumes, actual: _actual, elegir: _elegir, abrirAlbum: _abrirAlbum)),
                         const SizedBox(width: 8),
                         Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(10), child: pila)),
                       ]),
                     ),
-                    const SizedBox(height: 88, child: BarraAncha()),
+                    SizedBox(height: 88, child: BarraAncha(widget.jf)),
                   ]),
                 ),
               ),
@@ -88,7 +92,7 @@ class _ArmazonState extends State<Armazon> {
           : Scaffold(
               body: pila,
               bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
-                const MiniPlayer(),
+                MiniPlayer(widget.jf),
                 Pestanas(actual: _actual, elegir: _elegir),
               ]),
             ),
@@ -131,9 +135,10 @@ class Pestanas extends StatelessWidget {
 }
 
 class Lateral extends StatelessWidget {
-  const Lateral(this.jf, {super.key, required this.actual, required this.elegir, required this.abrirAlbum});
+  const Lateral(this.jf, {super.key, required this.albumes, required this.actual, required this.elegir, required this.abrirAlbum});
 
   final Jellyfin jf;
+  final Future<List<Item>> albumes;
   final int actual;
   final ValueChanged<int> elegir;
   final ValueChanged<Item> abrirAlbum;
@@ -184,7 +189,7 @@ class Lateral extends StatelessWidget {
               const SizedBox(height: 8),
               Expanded(
                 child: FutureBuilder(
-                  future: jf.albums(),
+                  future: albumes,
                   builder: (context, snap) => ListView(children: [
                     for (final a in snap.data ?? const <Item>[])
                       InkWell(
@@ -259,23 +264,15 @@ Widget _botonPlay({double lado = 44, Color? fondo, Color color = texto}) => Stre
       },
     );
 
-/// Posicion y duracion de lo que suena, cada medio segundo.
-Stream<(Duration, Duration)> _avance() => Stream.periodic(const Duration(milliseconds: 500), (_) {
-      final dura = player.mediaItem.valueOrNull?.duration ?? Duration.zero;
-      return (player.playbackState.value.position, dura);
-    });
-
 class Progreso extends StatelessWidget {
   const Progreso({super.key, this.alto = 2, this.conTiempos = false});
 
   final double alto;
   final bool conTiempos;
 
-  static String _t(Duration d) => '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
-
   @override
   Widget build(BuildContext context) => StreamBuilder(
-        stream: _avance(),
+        stream: avance(),
         builder: (context, s) {
           final (pos, dura) = s.data ?? (Duration.zero, Duration.zero);
           final f = dura.inMilliseconds == 0 ? 0.0 : (pos.inMilliseconds / dura.inMilliseconds).clamp(0.0, 1.0);
@@ -286,11 +283,11 @@ class Progreso extends StatelessWidget {
           if (!conTiempos) return linea;
           const estilo = TextStyle(fontSize: 12, color: textoSuave);
           return Row(children: [
-            Text(_t(pos), style: estilo),
+            Text(tiempo(pos), style: estilo),
             const SizedBox(width: 10),
             Expanded(child: linea),
             const SizedBox(width: 10),
-            Text(_t(dura), style: estilo),
+            Text(tiempo(dura), style: estilo),
           ]);
         },
       );
@@ -298,7 +295,9 @@ class Progreso extends StatelessWidget {
 
 /// El mini reproductor del telefono. Sin cola no se pinta.
 class MiniPlayer extends StatelessWidget {
-  const MiniPlayer({super.key});
+  const MiniPlayer(this.jf, {super.key});
+
+  final Jellyfin jf;
 
   @override
   Widget build(BuildContext context) => StreamBuilder<MediaItem?>(
@@ -311,7 +310,13 @@ class MiniPlayer extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(8, 8, 4, 6),
             decoration: BoxDecoration(color: barraMini, borderRadius: BorderRadius.circular(10)),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
+              // Tocar la fila abre el Reproductor; el boton de pausa se queda su toque.
               Row(children: [
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => abrirReproductor(context, jf),
+                    child: Row(children: [
                 _portadaDe(m, 40),
                 const SizedBox(width: 10),
                 Expanded(
@@ -319,6 +324,9 @@ class MiniPlayer extends StatelessWidget {
                     Text(m.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                     Text(m.artist ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFFE3CFC3))),
                   ]),
+                ),
+                    ]),
+                  ),
                 ),
                 _botonPlay(),
               ]),
@@ -332,7 +340,9 @@ class MiniPlayer extends StatelessWidget {
 
 /// La barra del reproductor de la web, a todo lo ancho.
 class BarraAncha extends StatefulWidget {
-  const BarraAncha({super.key});
+  const BarraAncha(this.jf, {super.key});
+
+  final Jellyfin jf;
 
   @override
   State<BarraAncha> createState() => _BarraAnchaState();
@@ -351,7 +361,9 @@ class _BarraAnchaState extends State<BarraAncha> {
               builder: (context, snap) {
                 final m = snap.data;
                 if (m == null) return const Text('Nada sonando', style: TextStyle(color: textoSuave));
-                return Row(children: [
+                return InkWell(
+                  onTap: () => abrirReproductor(context, widget.jf),
+                  child: Row(children: [
                   _portadaDe(m, 56),
                   const SizedBox(width: 14),
                   Flexible(
@@ -360,24 +372,31 @@ class _BarraAnchaState extends State<BarraAncha> {
                       Text(m.artist ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: textoSuave)),
                     ]),
                   ),
-                ]);
+                ]),
+                );
               },
             ),
           ),
           Expanded(
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                botonAleatorio(),
+                const SizedBox(width: 8),
                 IconButton(tooltip: 'Anterior', onPressed: player.skipToPrevious, icon: const Icon(Icons.skip_previous_rounded), color: textoSuave),
                 const SizedBox(width: 12),
                 _botonPlay(lado: 40, fondo: texto, color: tinta),
                 const SizedBox(width: 12),
                 IconButton(tooltip: 'Siguiente', onPressed: player.skipToNext, icon: const Icon(Icons.skip_next_rounded), color: textoSuave),
+                const SizedBox(width: 8),
+                botonRepetir(),
               ]),
               const Progreso(alto: 4, conTiempos: true),
             ]),
           ),
           Expanded(
             child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              IconButton(tooltip: 'Cola de reproducción', color: textoSuave, onPressed: () => abrirCola(context), icon: const Icon(Icons.queue_music_rounded)),
+              const SizedBox(width: 8),
               const Icon(Icons.volume_up_rounded, color: textoSuave, size: 20),
               SizedBox(
                 width: 120,

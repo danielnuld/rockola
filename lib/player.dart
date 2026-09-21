@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -11,6 +13,21 @@ Future<void> reproducir(List<MediaItem> items, int i) async {
   await player.skipToQueueItem(i);
   await player.play();
 }
+
+/// La cola en aleatorio, empezando por una cualquiera.
+Future<void> reproducirAleatorio(List<MediaItem> items) async {
+  await player.updateQueue(items);
+  await player.setShuffleMode(AudioServiceShuffleMode.all);
+  await player.skipToQueueItem(Random().nextInt(items.length));
+  await player.play();
+}
+
+/// Repetir va de nada a toda la cola, a una sola cancion, y de vuelta a nada.
+AudioServiceRepeatMode siguienteRepeticion(AudioServiceRepeatMode m) => switch (m) {
+      AudioServiceRepeatMode.none => AudioServiceRepeatMode.all,
+      AudioServiceRepeatMode.all || AudioServiceRepeatMode.group => AudioServiceRepeatMode.one,
+      AudioServiceRepeatMode.one => AudioServiceRepeatMode.none,
+    };
 
 /// Puente entre just_audio (reproduce) y audio_service (pantalla de bloqueo,
 /// segundo plano, auriculares).
@@ -35,6 +52,24 @@ class Player extends BaseAudioHandler with QueueHandler, SeekHandler {
   @override
   Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) async {
     if (name == 'volumen') await _p.setVolume((extras?['v'] as num).toDouble());
+  }
+
+  @override
+  Future<void> setShuffleMode(AudioServiceShuffleMode shuffleMode) async {
+    final si = shuffleMode != AudioServiceShuffleMode.none;
+    if (si) await _p.shuffle();
+    await _p.setShuffleModeEnabled(si);
+    playbackState.add(_state(_p.playbackEvent)); // just_audio no emite evento por esto
+  }
+
+  @override
+  Future<void> setRepeatMode(AudioServiceRepeatMode repeatMode) async {
+    await _p.setLoopMode(switch (repeatMode) {
+      AudioServiceRepeatMode.none => LoopMode.off,
+      AudioServiceRepeatMode.one => LoopMode.one,
+      _ => LoopMode.all,
+    });
+    playbackState.add(_state(_p.playbackEvent));
   }
 
   @override
@@ -72,5 +107,11 @@ class Player extends BaseAudioHandler with QueueHandler, SeekHandler {
         bufferedPosition: _p.bufferedPosition,
         speed: _p.speed,
         queueIndex: e.currentIndex,
+        shuffleMode: _p.shuffleModeEnabled ? AudioServiceShuffleMode.all : AudioServiceShuffleMode.none,
+        repeatMode: switch (_p.loopMode) {
+          LoopMode.off => AudioServiceRepeatMode.none,
+          LoopMode.one => AudioServiceRepeatMode.one,
+          LoopMode.all => AudioServiceRepeatMode.all,
+        },
       );
 }

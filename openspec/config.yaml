@@ -1,0 +1,28 @@
+schema: spec-driven
+
+context: |
+  Rockola: cliente de musica para Jellyfin, iPhone primero y web despues.
+  Flutter (Dart), just_audio + audio_service para reproducir, http contra la API
+  de Jellyfin. Un usuario y un servidor por instalacion; se publicara, asi que
+  nada atado a un servidor ni a un locutor concreto.
+  Sin Mac: la UI se prueba en Chrome (`flutter run -d chrome`); el IPA sin firmar
+  sale de GitHub Actions (`ios.yml`, a mano: macOS cuenta x10 en repo privado) y
+  se instala con Sideloadly. Sin cuenta de Apple Developer hasta dic 2026: nada
+  que dependa de CarPlay antes.
+  Funciona sin conexion: descargas comprimidas por Jellyfin, radio con locutor
+  cuyo guion se genera con conexion y se guarda; voz con Piper en el equipo;
+  Foundation Models de Apple solo para improvisar sin conexion.
+  Plano visual: lienzo https://claude.ai/artifact/D14THDp29xLNVPMe49iS4m
+  (seis pantallas iPhone, dos web, barra inferior). Se implementa literal de ahi.
+  Espanol en la UI y en los documentos.
+
+rules:
+  proposal:
+    - Nombrar la pantalla o artboard del lienzo que implementa, si aplica
+    - Incluir "Fuera de alcance"; lo que se deja para despues va ahi, no en tareas
+  design:
+    - Escalera ponytail antes de cada decision - existe ya en el repo, lo da Flutter o una dependencia instalada, cabe en una linea; solo entonces codigo nuevo
+    - Cada dependencia nueva se justifica en una linea
+  tasks:
+    - Tareas de medio dia como maximo
+    - Cada fase termina con una comprobacion ejecutable (flutter analyze + un test o una prueba en Chrome), no con "revisar"

@@ -1,7 +1,7 @@
 # apariencia Specification
 
 ## Purpose
-TBD - created by archiving change base-visual. Update Purpose after archive.
+Colores, tipografías y reglas visuales comunes a toda la app.
 ## Requirements
 ### Requirement: Paleta de Rockola
 La app SHALL usar fondo `#141110`, texto principal `#F4EDE6`, texto secundario

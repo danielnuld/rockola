@@ -1,7 +1,7 @@
 # navegacion Specification
 
 ## Purpose
-TBD - created by archiving change base-visual. Update Purpose after archive.
+Pestañas, barra inferior con mini reproductor y el diseño ancho para la web.
 ## Requirements
 ### Requirement: Cuatro pestañas
 La app SHALL tener cuatro pestañas: Inicio, Buscar, Biblioteca y Radio, con Inicio

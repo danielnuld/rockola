@@ -1,7 +1,7 @@
 # inicio Specification
 
 ## Purpose
-TBD - created by archiving change base-visual. Update Purpose after archive.
+Contenido de la pantalla Inicio y de dónde sale cada sección.
 ## Requirements
 ### Requirement: Saludo según la hora
 Inicio SHALL saludar con "Buenos días" de 6:00 a 11:59, "Buenas tardes" de 12:00 a

@@ -150,6 +150,12 @@ class Descargas extends ChangeNotifier {
     return f.existsSync() ? f.readAsStringSync() : null;
   }
 
+  /// La huella guardada de una cancion descargada (docs/huellas.md).
+  String? huellaGuardada(String itemId) {
+    final f = File(_ruta('$itemId.huella.json'));
+    return f.existsSync() ? f.readAsStringSync() : null;
+  }
+
   Future<void> borrar(String albumId) async {
     final pistas = _pistas(albumId);
     if (_indice.remove(albumId) == null) return;
@@ -157,6 +163,7 @@ class Descargas extends ChangeNotifier {
       await _borrarSiEsta(_ruta(p['archivo']));
       await _borrarSiEsta(_ruta('${p['archivo']}.parte'));
       await _borrarSiEsta(_ruta('${p['item']['Id']}.letra.json'));
+      await _borrarSiEsta(_ruta('${p['item']['Id']}.huella.json'));
     }
     await _borrarSiEsta(_ruta('$albumId.jpg'));
     await _guardar();
@@ -187,6 +194,7 @@ class Descargas extends ChangeNotifier {
         await _portada(albumId);
         p['bytes'] = await _bajar(p['url'], _ruta(p['archivo']));
         await _guardarLetra(p);
+        await _guardarHuella(p);
         // Borrado mientras bajaba: el archivo recien llegado sobra.
         if (!_indice.containsKey(albumId)) await _borrarSiEsta(_ruta(p['archivo']));
         await _guardar();
@@ -217,6 +225,16 @@ class Descargas extends ChangeNotifier {
         dura: b['seg'] == null ? null : Duration(seconds: b['seg']),
       );
       if (l != null && l.isNotEmpty) await File(destino).writeAsString(jsonEncode(comoJellyfin(l)));
+    } catch (_) {}
+  }
+
+  /// Con servidor de huellas, el visualizador reacciona sin red. Igual que la
+  /// letra: sin huella la cancion sigue descargada.
+  Future<void> _guardarHuella(Item p) async {
+    final url = (_prefs?.getString('huellas') ?? '').trim().replaceAll(RegExp(r'/+$'), '');
+    if (url.isEmpty) return;
+    try {
+      await _bajar('$url/huella/${p['item']['Id']}', _ruta('${p['item']['Id']}.huella.json'));
     } catch (_) {}
   }
 

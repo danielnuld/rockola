@@ -10,6 +10,7 @@ import 'package:rockola/descargas.dart';
 import 'package:rockola/jellyfin.dart';
 import 'package:rockola/player.dart';
 import 'package:rockola/tema.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'falso.dart';
 
@@ -58,6 +59,22 @@ void main() {
     expect(url, contains('/Audio/t1/universal?'));
     expect(url, contains('MaxStreamingBitrate=160000'));
     expect(url, contains('AudioCodec=aac'));
+  });
+
+  test('con servidor de huellas, la huella viaja con la cancion y se borra con ella', () async {
+    final s = Servidor();
+    final sin = await Descargas.abrir(dir, cliente: s.cliente);
+    await sin.pedir(jf, album, pistas);
+    expect(s.pedidas.where((u) => u.contains('/huella/')), isEmpty, reason: 'sin servidor no se pide');
+    await sin.borrar('a1');
+
+    SharedPreferences.setMockInitialValues({'huellas': 'http://nuld:8788/'});
+    final d = await Descargas.abrir(dir, cliente: s.cliente, prefs: await SharedPreferences.getInstance());
+    await d.pedir(jf, album, pistas);
+    expect(s.pedidas, contains('http://nuld:8788/huella/t2'));
+    expect(d.huellaGuardada('t2'), 'audio de t2');
+    await d.borrar('a1');
+    expect(d.huellaGuardada('t2'), isNull);
   });
 
   test('baja un album entero y lo recuerda al volver a abrir', () async {

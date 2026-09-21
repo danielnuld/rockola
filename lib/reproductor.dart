@@ -7,6 +7,7 @@ import 'letras.dart';
 import 'listas.dart';
 import 'player.dart';
 import 'tema.dart';
+import 'visualizador.dart';
 
 /// Encima de todo (Navigator raiz): tapa pestañas o lateral igual en telefono y web.
 void abrirReproductor(BuildContext context, Jellyfin jf) => Navigator.of(context, rootNavigator: true)
@@ -137,6 +138,7 @@ class _ReproductorState extends State<Reproductor> {
                           Text(m.album ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                         ]),
                       ),
+                      IconButton(tooltip: 'Visualizador', onPressed: () => abrirVisualizador(context), icon: const Icon(Icons.graphic_eq_rounded)),
                       if (hayLetra)
                         IconButton(
                           tooltip: conLetra ? 'Ocultar la letra' : 'Letra',

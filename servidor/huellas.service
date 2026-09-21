@@ -1,0 +1,20 @@
+# Huellas de Rockola en nuld. Instalar:
+#   sudo cp huellas.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now huellas
+[Unit]
+Description=Huellas de Rockola (visualizador)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User=daniel
+# JELLYFIN_URL y JELLYFIN_API_KEY: los mismos que usa Giulia, sin duplicar la clave.
+EnvironmentFile=/srv/stack/.env
+Environment=HUELLAS_DIR=/srv/data/huellas
+Environment=HUELLAS_TAILSCALE=100.102.40.65
+Environment=HUELLAS_ORIGENES=http://localhost:5000
+ExecStart=/usr/bin/python3 /srv/data/rockola/huellas.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

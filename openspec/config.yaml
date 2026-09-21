@@ -9,9 +9,17 @@ context: |
   sale de GitHub Actions (`ios.yml`, a mano: macOS cuenta x10 en repo privado) y
   se instala con Sideloadly. Sin cuenta de Apple Developer hasta dic 2026: nada
   que dependa de CarPlay antes.
-  Funciona sin conexion: descargas comprimidas por Jellyfin, radio con locutor
-  cuyo guion se genera con conexion y se guarda; voz con Piper en el equipo;
-  Foundation Models de Apple solo para improvisar sin conexion.
+  Funciona sin conexion: descargas comprimidas por Jellyfin.
+  El locutor tiene dos motores detras de una misma interfaz (dos
+  implementaciones reales, por eso si se justifica):
+  - iOS: Foundation Models de Apple (on-device, sin clave, sin servidor) para el
+    texto y Piper local (sherpa-onnx, es_AR-daniela-high) para la voz. Nunca
+    llama a Claude ni a ningun servidor.
+  - Web: un endpoint HTTP configurable ("servidor del locutor") que devuelve
+    texto y audio. En la instalacion de Daniel es el nucleo de Giulia en `nuld`
+    (jarvis-m710q, puerto 8787): Claude por el CLI de la suscripcion con Gemini
+    de via rapida, y Piper del propio servidor. Ninguna clave en el navegador.
+    Sin respuesta del servidor, la musica sigue sin locutor.
   Plano visual: lienzo https://claude.ai/artifact/D14THDp29xLNVPMe49iS4m
   (seis pantallas iPhone, dos web, barra inferior). Se implementa literal de ahi.
   Espanol en la UI y en los documentos.

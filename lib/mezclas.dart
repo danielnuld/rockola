@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'biblioteca.dart';
 import 'jellyfin.dart';
+import 'listas.dart';
 import 'player.dart';
 import 'tema.dart';
 
@@ -223,6 +224,7 @@ class MezclaPage extends StatelessWidget {
             onTap: () => reproducir(items, i),
             title: Text(items[i].title, style: const TextStyle(fontWeight: FontWeight.w500)),
             subtitle: Text(items[i].artist ?? '', style: const TextStyle(color: textoSuave)),
+            trailing: MenuCancion(jf, items[i]),
           ),
       ]),
     );

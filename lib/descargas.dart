@@ -110,7 +110,8 @@ class Descargas extends ChangeNotifier {
   Future<void> pedir(Jellyfin jf, Item album, List<Item> pistas) async {
     final c = calidad;
     _indice[album['Id']] = {
-      'album': {for (final k in ['Id', 'Name', 'AlbumArtist', 'ProductionYear', 'AlbumArtists']) k: album[k]},
+      // Type distingue una lista descargada de un album.
+      'album': {for (final k in ['Id', 'Name', 'Type', 'AlbumArtist', 'ProductionYear', 'AlbumArtists']) k: album[k]},
       'calidad': c.name,
       'portada': jf.image(album['Id']),
       'pistas': [for (final t in pistas) _pista(jf, t, c)],

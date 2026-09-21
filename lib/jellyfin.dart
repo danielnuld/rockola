@@ -110,6 +110,48 @@ class Jellyfin {
     if (r.statusCode >= 300) throw Exception('Jellyfin respondio ${r.statusCode}');
   }
 
+  // --- listas de reproduccion (las de Jellyfin: se ven en cualquier cliente) ---
+
+  Future<void> _enviar(String metodo, String ruta, {Map<String, String>? query, Object? cuerpo}) async {
+    final req = http.Request(metodo, Uri.parse('$url$ruta').replace(queryParameters: query))..headers.addAll(_cabeceras);
+    if (cuerpo != null) {
+      req.headers['Content-Type'] = 'application/json';
+      req.body = jsonEncode(cuerpo);
+    }
+    final r = await http.Response.fromStream(await _http.send(req));
+    if (r.statusCode >= 300) throw Exception('Jellyfin respondio ${r.statusCode}');
+  }
+
+  Future<List<Item>> listas() =>
+      _items({'IncludeItemTypes': 'Playlist', 'Recursive': 'true', 'SortBy': 'SortName', 'Fields': 'ChildCount'});
+
+  /// Cada cancion trae su `PlaylistItemId`: la entrada en la lista, que es lo que
+  /// se quita o se mueve (una cancion puede estar dos veces).
+  Future<List<Item>> cancionesDeLista(String id) async =>
+      ((await _get('/Playlists/$id/Items', {'userId': userId}))['Items'] as List).cast<Item>();
+
+  Future<String> crearLista(String nombre, List<String> ids) async {
+    final r = await _http.post(Uri.parse('$url/Playlists'),
+        headers: {..._cabeceras, 'Content-Type': 'application/json'},
+        body: jsonEncode({'Name': nombre, 'Ids': ids, 'UserId': userId, 'MediaType': 'Audio'}));
+    if (r.statusCode >= 300) throw Exception('Jellyfin respondio ${r.statusCode}');
+    return jsonDecode(r.body)['Id'] as String;
+  }
+
+  Future<void> anadirALista(String id, List<String> ids) =>
+      _enviar('POST', '/Playlists/$id/Items', query: {'ids': ids.join(','), 'userId': userId});
+
+  Future<void> quitarDeLista(String id, List<String> entradas) =>
+      _enviar('DELETE', '/Playlists/$id/Items', query: {'entryIds': entradas.join(',')});
+
+  // Mover y renombrar necesitan el usuario de la sesion: con la clave del
+  // servidor Jellyfin responde "Guid can't be empty" (medido).
+  Future<void> moverEnLista(String id, String entrada, int i) => _enviar('POST', '/Playlists/$id/Items/$entrada/Move/$i');
+
+  Future<void> renombrarLista(String id, String nombre) => _enviar('POST', '/Playlists/$id', cuerpo: {'Name': nombre});
+
+  Future<void> borrarLista(String id) => _enviar('DELETE', '/Items/$id');
+
   /// Marca o desmarca. Devuelve lo que quedo guardado.
   Future<bool> favorito(String id, bool si) async {
     final u = Uri.parse('$url/Users/$userId/FavoriteItems/$id');

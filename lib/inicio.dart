@@ -82,7 +82,7 @@ class _InicioState extends State<Inicio> {
                 if (snap.hasError) {
                   return Row(children: [
                     Expanded(child: Text('No pude traer tu historial: ${snap.error}', style: const TextStyle(color: textoSuave))),
-                    TextButton(onPressed: () => setState(() => _recientes = widget.jf.recientes()), child: const Text('Reintentar')),
+                    TextButton(onPressed: () => setState(() { _recientes = widget.jf.recientes(); }), child: const Text('Reintentar')),
                   ]);
                 }
                 return _volver(albumesRecientes(snap.data ?? []));

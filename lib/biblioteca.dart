@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'descargas.dart';
 import 'descargas_pantalla.dart';
 import 'jellyfin.dart';
+import 'listas.dart';
 import 'mezclas.dart';
 import 'player.dart';
 import 'tema.dart';
@@ -47,14 +48,14 @@ List<Item> porRecientes(List<Item> items, List<String> historial, String Functio
     });
 }
 
-String lineaAlbum(int? anio, int canciones, Duration dura) => [
-      'Álbum',
+String lineaAlbum(int? anio, int canciones, Duration dura, {String tipo = 'Álbum'}) => [
+      tipo,
       if (anio != null) '$anio',
       '$canciones ${canciones == 1 ? 'canción' : 'canciones'}',
       '${dura.inMinutes} min',
     ].join(' · ');
 
-enum _Filtro { albumes, artistas, mezclas, descargado }
+enum _Filtro { albumes, artistas, listas, mezclas, descargado }
 
 class Biblioteca extends StatefulWidget {
   const Biblioteca(this.jf, {super.key, required this.mezclas});
@@ -69,6 +70,24 @@ class Biblioteca extends StatefulWidget {
 class _BibliotecaState extends State<Biblioteca> {
   var _filtro = _Filtro.albumes;
   var _aZ = false;
+  late Future<List<Item>> _listas = widget.jf.listas();
+
+  Future<void> _abrirLista(Item l) async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => ListaPage(widget.jf, l)));
+    // Pudo cambiar de nombre, de canciones o dejar de existir.
+    if (mounted) setState(() { _listas = widget.jf.listas(); });
+  }
+
+  Future<void> _nuevaLista() async {
+    final nombre = await pedirNombre(context);
+    if (nombre == null) return;
+    try {
+      await widget.jf.crearLista(nombre, const []);
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No pude crear la lista')));
+    }
+    if (mounted) setState(() { _listas = widget.jf.listas(); });
+  }
   late final _datos = Future.wait([
     widget.jf.albums(),
     widget.jf.artistas(),
@@ -93,6 +112,8 @@ class _BibliotecaState extends State<Biblioteca> {
                   const SizedBox(width: 8),
                   Chip2('Artistas', activo: _filtro == _Filtro.artistas, alTocar: () => setState(() => _filtro = _Filtro.artistas)),
                   const SizedBox(width: 8),
+                  Chip2('Listas', activo: _filtro == _Filtro.listas, alTocar: () => setState(() => _filtro = _Filtro.listas)),
+                  const SizedBox(width: 8),
                   Chip2('Mezclas', activo: _filtro == _Filtro.mezclas, alTocar: () => setState(() => _filtro = _Filtro.mezclas)),
                   if (descargas != null) ...[
                     const SizedBox(width: 8),
@@ -100,6 +121,32 @@ class _BibliotecaState extends State<Biblioteca> {
                   ],
                 ])),
               ];
+              if (_filtro == _Filtro.listas) {
+                return FutureBuilder(
+                  future: _listas,
+                  builder: (context, l) => _lista([
+                    ...cabecera,
+                    const SizedBox(height: 8),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const SizedBox.square(dimension: 56, child: Icon(Icons.add_rounded, size: 30)),
+                      title: const Text('Nueva lista', style: TextStyle(fontWeight: FontWeight.w500)),
+                      onTap: _nuevaLista,
+                    ),
+                    if (l.hasError) Text('${l.error}', style: const TextStyle(color: textoSuave)),
+                    if (l.hasData && l.data!.isEmpty)
+                      const Padding(padding: EdgeInsets.only(top: 12), child: Text('Todavía no tienes listas', style: TextStyle(color: textoSuave))),
+                    for (final lista in l.data ?? const <Item>[])
+                      Fila(
+                        jf: widget.jf,
+                        item: lista,
+                        sub: 'Lista · ${lista['ChildCount'] ?? 0} canciones',
+                        descargado: descargas?.completo(lista['Id']) ?? false,
+                        alTocar: () => _abrirLista(lista),
+                      ),
+                  ]),
+                );
+              }
               if (_filtro == _Filtro.mezclas) {
                 return FutureBuilder(
                   future: widget.mezclas,
@@ -140,7 +187,7 @@ class _BibliotecaState extends State<Biblioteca> {
                 _Filtro.albumes => albumes,
                 _Filtro.artistas => artistas,
                 _Filtro.descargado => descargas!.albumes,
-                _Filtro.mezclas => const <Item>[], // resuelto arriba
+                _Filtro.mezclas || _Filtro.listas => const <Item>[], // resueltos arriba
               };
               if (!_aZ) {
                 items = esAlbum
@@ -165,7 +212,9 @@ class _BibliotecaState extends State<Biblioteca> {
                   Text('${items.length} ${esAlbum ? 'álbumes' : 'artistas'}', style: const TextStyle(fontSize: 13, color: Color(0xFFD9CBBF))),
                 ]),
                 for (final a in items)
-                  esAlbum
+                  a['Type'] == 'Playlist' // una lista descargada, en el filtro Descargado
+                      ? Fila(jf: widget.jf, item: a, sub: 'Lista', descargado: true, alTocar: () => _abrirLista(a))
+                      : esAlbum
                       ? Fila(
                           jf: widget.jf,
                           item: a,
@@ -228,6 +277,7 @@ class Fila extends StatelessWidget {
     required this.alTocar,
     this.redonda = false,
     this.descargado = false,
+    this.fin,
   });
 
   final Jellyfin jf;
@@ -235,6 +285,9 @@ class Fila extends StatelessWidget {
   final String sub;
   final VoidCallback alTocar;
   final bool redonda, descargado;
+
+  /// Lo que va a la derecha, como el menu de una cancion.
+  final Widget? fin;
 
   @override
   Widget build(BuildContext context) => InkWell(
@@ -260,6 +313,7 @@ class Fila extends StatelessWidget {
                 ]),
               ]),
             ),
+            ?fin,
           ]),
         ),
       );
@@ -361,6 +415,12 @@ class _AlbumPageState extends State<AlbumPage> {
                   Row(children: [
                     Corazon(jf, a['Id'], inicial: a['UserData']?['IsFavorite'] ?? false),
                     if (descargas != null) BotonDescarga(jf, a, pistas),
+                    IconButton(
+                      tooltip: 'Añadir el álbum a una lista',
+                      color: textoSuave,
+                      onPressed: pistas.isEmpty ? null : () => anadirALista(context, jf, [for (final t in pistas) '${t['Id']}']),
+                      icon: const Icon(Icons.playlist_add_rounded),
+                    ),
                     const Spacer(),
                     IconButton(
                       tooltip: 'Aleatorio',
@@ -389,7 +449,10 @@ class _AlbumPageState extends State<AlbumPage> {
                         title: Text(items[i].title,
                             style: TextStyle(fontWeight: FontWeight.w500, color: items[i].extras?['itemId'] == sonando ? coral : texto)),
                         subtitle: Text(items[i].artist ?? '', style: const TextStyle(color: textoSuave)),
-                        trailing: Text(_tiempo(items[i].duration), style: const TextStyle(fontSize: 12, color: textoApagado)),
+                        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Text(_tiempo(items[i].duration), style: const TextStyle(fontSize: 12, color: textoApagado)),
+                          MenuCancion(jf, items[i]),
+                        ]),
                       ),
                   ]);
                 },

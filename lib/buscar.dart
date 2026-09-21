@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'biblioteca.dart';
 import 'jellyfin.dart';
+import 'listas.dart';
 import 'player.dart';
 import 'tema.dart';
 
@@ -97,6 +98,7 @@ class _BuscarState extends State<Buscar> {
                           item: {...canciones[i], 'Id': canciones[i]['AlbumId'] ?? canciones[i]['Id']},
                           sub: 'Canción · ${cola[i].artist ?? ''}',
                           alTocar: () => reproducir(cola, i),
+                          fin: MenuCancion(widget.jf, cola[i]),
                         ),
                     ],
                   ]);

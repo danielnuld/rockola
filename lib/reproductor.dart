@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'biblioteca.dart';
 import 'jellyfin.dart';
+import 'listas.dart';
 import 'player.dart';
 import 'tema.dart';
 
@@ -132,6 +133,12 @@ class Reproductor extends StatelessWidget {
                         ]),
                       ),
                       // key: al cambiar de cancion, el corazon arranca con el estado de la nueva.
+                      if (m.extras?['itemId'] != null)
+                        IconButton(
+                          tooltip: 'Añadir a una lista',
+                          onPressed: () => anadirALista(context, jf, ['${m.extras!['itemId']}']),
+                          icon: const Icon(Icons.playlist_add_rounded),
+                        ),
                       Corazon(jf, '${m.extras?['itemId']}', key: ValueKey(m.id), inicial: m.extras?['fav'] == true),
                     ]),
                     const SizedBox(height: 12),

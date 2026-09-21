@@ -9,8 +9,8 @@ Medido en el Jellyfin de `nuld` (622 canciones):
   segunda deja `PlayCount` en 1 porque la canción ya está marcada.
 - `POST /Sessions/Playing` + `/Sessions/Playing/Stopped` responden 204, pero con la
   clave de API del servidor no cuentan: esa clave no es de ningún usuario. Con la
-  sesión de un usuario es lo que usan los clientes oficiales; queda por comprobar con
-  la de Daniel (tarea 1.4).
+  sesión de un usuario es lo que usan los clientes oficiales. **Comprobado con la de
+  Daniel**: "La Pelotona" escuchada entera dos veces en Chrome pasó de 0 a 2.
 - `InstantMix` existe (200).
 
 ## Goals / Non-Goals

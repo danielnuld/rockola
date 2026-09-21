@@ -82,8 +82,25 @@ void main() {
     expect(ids.take(6), ['a0', 'b0', 'c0', 'a1', 'b1', 'c1'], reason: 'b empieza en a0, que ya sonó');
     expect(ids, hasLength(16));
     expect(ids.toSet(), hasLength(16));
-    expect(horaDeRadio(mezclas, 1).first['Id'], 'a0', reason: 'la mezcla b empieza por a0');
-    expect(horaDeRadio(mezclas, 2).first['Id'], 'c0');
+  });
+
+  test('cambiar el rumbo da otras canciones, no las mismas en otro orden', () {
+    final antes = {for (final c in horaDeRadio(mezclas, 0)) c['Id']};
+    final despues = [for (final c in horaDeRadio(mezclas, 1)) c['Id']];
+    expect(despues.first, isNot('a0'));
+    expect(despues.where(antes.contains).length, lessThan(4), reason: 'casi sin repetir la hora anterior');
+  });
+
+  test('una entrada pedida para la hora anterior no se mete en la nueva', () async {
+    await radio.sintonizar(mezclas);
+    s.espera = Completer();
+    await suena('c0'); // pide la de antes de la cuarta
+    final nueva = radio.cambiarRumbo(mezclas); // la apertura nueva tambien espera
+    s.espera!.complete();
+    await nueva;
+    await pumpEventQueue();
+    expect(cola.queue.value.where(esLocutor), hasLength(1), reason: 'solo la apertura de la hora nueva');
+    expect(esLocutor(cola.queue.value.first), isTrue);
   });
 
   test('abre con una entrada y mete otra antes de la cuarta cancion', () async {

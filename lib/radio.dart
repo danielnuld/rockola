@@ -61,21 +61,26 @@ class Locutor {
 }
 
 /// Una hora de radio: por turnos de las mezclas del dia, sin repetir. `rumbo`
-/// rota por cual mezcla se empieza.
+/// rota por cual mezcla se empieza y sigue, en cada mezcla, donde se quedo el
+/// rumbo anterior: solo rotar daba las mismas canciones en otro orden.
 List<Item> horaDeRadio(List<Mezcla> mezclas, int rumbo, {int n = 16}) {
   if (mezclas.isEmpty) return const [];
-  final orden = [for (var i = 0; i < mezclas.length; i++) mezclas[(i + rumbo) % mezclas.length]];
-  final pos = List.filled(orden.length, 0);
+  final m = mezclas.length;
+  final orden = [for (var i = 0; i < m; i++) mezclas[(i + rumbo) % m]];
+  final paso = (n / m).ceil(); // canciones que una hora toma de cada mezcla
+  final tomadas = List.filled(m, 0);
   final vistas = <String>{};
   final hora = <Item>[];
   var sinAvance = 0;
-  for (var i = 0; hora.length < n && sinAvance < orden.length; i = (i + 1) % orden.length) {
+  for (var i = 0; hora.length < n && sinAvance < m; i = (i + 1) % m) {
     final canciones = orden[i].canciones;
-    while (pos[i] < canciones.length && !vistas.add('${canciones[pos[i]]['Id']}')) {
-      pos[i]++;
+    Item? elegida;
+    while (elegida == null && tomadas[i] < canciones.length) {
+      final c = canciones[(rumbo * paso + tomadas[i]++) % canciones.length];
+      if (vistas.add('${c['Id']}')) elegida = c;
     }
-    if (pos[i] < canciones.length) {
-      hora.add(canciones[pos[i]++]);
+    if (elegida != null) {
+      hora.add(elegida);
       sinAvance = 0;
     } else {
       sinAvance++;
@@ -108,6 +113,9 @@ class SesionRadio extends ChangeNotifier {
   /// Entradas entre canciones pedidas en esta hora: una si y otra no llevan dato.
   var _entradas = 0;
 
+  /// Sube con cada hora nueva: una entrada pedida para la anterior no se mete en esta.
+  var _hora = 0;
+
   int get cada => pocaCharla ? 6 : 3;
 
   /// Lee el servidor guardado en Ajustes y le pregunta el nombre.
@@ -124,6 +132,7 @@ class SesionRadio extends ChangeNotifier {
     if (hora.isEmpty) return;
     _pedidas.clear();
     _entradas = 0;
+    _hora++;
     await _sub?.cancel();
     // La apertura espera poco: mejor empezar sin locutor que con silencio.
     final apertura = await _pedir(null, hora.first).timeout(const Duration(seconds: 8), onTimeout: () => null);
@@ -173,8 +182,9 @@ class SesionRadio extends ChangeNotifier {
   }
 
   Future<void> _insertar(MediaItem antes, MediaItem despues) async {
+    final hora = _hora;
     final e = await _pedir(antes, despues);
-    if (e == null) return;
+    if (e == null || hora != _hora) return;
     final cola = player.queue.value;
     final pos = cola.indexWhere((m) => m.id == despues.id);
     final actual = player.playbackState.value.queueIndex ?? 0;

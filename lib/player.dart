@@ -45,6 +45,9 @@ class Player extends BaseAudioHandler with QueueHandler, SeekHandler {
   @override
   Future<void> updateQueue(List<MediaItem> items) async {
     queue.add(items);
+    // Parar antes de cargar la cola nueva: sin esto, en el navegador seguia
+    // sonando la anterior ("Cambiar el rumbo" repetia la misma entrada).
+    await _p.stop();
     await _p.setAudioSources([for (final m in items) AudioSource.uri(Uri.parse(m.id))]);
   }
 
@@ -91,8 +94,13 @@ class Player extends BaseAudioHandler with QueueHandler, SeekHandler {
   Future<void> skipToNext() => _p.seekToNext();
   @override
   Future<void> skipToPrevious() => _p.seekToPrevious();
+  /// Anuncia el elemento siempre: `currentIndexStream` solo avisa si cambia el
+  /// indice, y al cargar otra cola se pasa del 0 al 0 con otra cancion.
   @override
-  Future<void> skipToQueueItem(int index) => _p.seek(Duration.zero, index: index);
+  Future<void> skipToQueueItem(int index) async {
+    await _p.seek(Duration.zero, index: index);
+    if (index < queue.value.length) mediaItem.add(queue.value[index]);
+  }
 
   PlaybackState _state(PlaybackEvent e) => PlaybackState(
         controls: [

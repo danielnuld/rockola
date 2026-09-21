@@ -23,5 +23,5 @@
 
 - [x] 4.1 `flutter analyze` y `flutter test` en verde
 - [x] 4.2 Comprobar en Chrome contra el Jellyfin real que las mezclas tienen sentido con la biblioteca de Daniel
-- [ ] 4.3 IPA compilado
+- [x] 4.3 IPA compilado
 - [x] 4.4 Corregir en el lienzo los nombres y textos de las mezclas si cambiaron

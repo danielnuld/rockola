@@ -12,9 +12,10 @@ entran en mezclas de género.
 ### Requirement: Tipos de mezcla
 La app SHALL armar, con las canciones de la biblioteca: una mezcla por cada una de
 las dos familias de género con más peso, una por cada una de las dos décadas con más
-peso, "Lo más tuyo: <artista>" si ya hay escuchas, y "Lo que casi no tocas". El peso
-de una familia, década o artista es la suma de las escuchas de sus canciones; sin
-escuchas, cuántas canciones tiene.
+peso, "Lo más tuyo: <artista>" (el artista con más escuchas) si ya hay escuchas, y
+"Lo que casi no tocas". El peso de una familia o década es cuántas canciones tiene
+más 5 por cada escucha: el tamaño de la biblioteca es la base y el historial inclina.
+La misma canción en dos discos cuenta una vez.
 
 #### Scenario: Sin historial
 - **WHEN** ninguna canción tiene escuchas
@@ -25,7 +26,8 @@ escuchas, cuántas canciones tiene.
 - **THEN** existe "Lo más tuyo: The Cranberries"
 
 ### Requirement: Qué entra en una mezcla
-Cada mezcla SHALL tener hasta 25 canciones y como máximo 3 del mismo artista, sin
+Cada mezcla SHALL tener hasta 25 canciones y como máximo 3 del mismo artista, o las
+necesarias para llegar a 25 cuando la mezcla tiene pocos artistas, sin
 dos del mismo artista seguidas si se puede evitar. Las canciones SHALL elegirse al
 azar con más probabilidad para las más escuchadas y las favoritas y menos para las
 saltadas; una canción saltada 3 veces o más sin ninguna escucha no SHALL entrar.
@@ -33,6 +35,14 @@ saltadas; una canción saltada 3 veces o más sin ninguna escucha no SHALL entra
 #### Scenario: Tope por artista
 - **WHEN** una década tiene 40 canciones de The Strokes y 10 de otros
 - **THEN** la mezcla de esa década lleva 3 de The Strokes como mucho
+
+#### Scenario: Pocos artistas
+- **WHEN** la familia Rap tiene 20 canciones de Post Malone y 20 de Cartel de Santa
+- **THEN** la mezcla de rap llega a 25 canciones, alternando artistas
+
+#### Scenario: Duplicada en un recopilatorio
+- **WHEN** "Dreams" está en dos discos de The Cranberries
+- **THEN** sale una sola vez en cada mezcla
 
 #### Scenario: Saltada muchas veces
 - **WHEN** una canción se saltó 3 veces y nunca se escuchó

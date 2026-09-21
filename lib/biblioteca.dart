@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'descargas.dart';
 import 'descargas_pantalla.dart';
 import 'jellyfin.dart';
+import 'mezclas.dart';
 import 'player.dart';
 import 'tema.dart';
 
@@ -50,12 +51,13 @@ String lineaAlbum(int? anio, int canciones, Duration dura) => [
       '${dura.inMinutes} min',
     ].join(' · ');
 
-enum _Filtro { albumes, artistas, descargado }
+enum _Filtro { albumes, artistas, mezclas, descargado }
 
 class Biblioteca extends StatefulWidget {
-  const Biblioteca(this.jf, {super.key});
+  const Biblioteca(this.jf, {super.key, required this.mezclas});
 
   final Jellyfin jf;
+  final Future<List<Mezcla>> mezclas;
 
   @override
   State<Biblioteca> createState() => _BibliotecaState();
@@ -82,16 +84,47 @@ class _BibliotecaState extends State<Biblioteca> {
               final cabecera = <Widget>[
                 Text('Tu biblioteca', style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 14),
-                Row(children: [
+                // Cuatro chips no caben siempre en un telefono: se desplazan, como en el lienzo.
+                SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
                   Chip2('Álbumes', activo: _filtro == _Filtro.albumes, alTocar: () => setState(() => _filtro = _Filtro.albumes)),
                   const SizedBox(width: 8),
                   Chip2('Artistas', activo: _filtro == _Filtro.artistas, alTocar: () => setState(() => _filtro = _Filtro.artistas)),
+                  const SizedBox(width: 8),
+                  Chip2('Mezclas', activo: _filtro == _Filtro.mezclas, alTocar: () => setState(() => _filtro = _Filtro.mezclas)),
                   if (descargas != null) ...[
                     const SizedBox(width: 8),
                     Chip2('Descargado', activo: _filtro == _Filtro.descargado, alTocar: () => setState(() => _filtro = _Filtro.descargado)),
                   ],
-                ]),
+                ])),
               ];
+              if (_filtro == _Filtro.mezclas) {
+                return FutureBuilder(
+                  future: widget.mezclas,
+                  builder: (context, m) => _lista([
+                    ...cabecera,
+                    const SizedBox(height: 12),
+                    for (final mezcla in m.data ?? const <Mezcla>[])
+                      InkWell(
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => MezclaPage(widget.jf, mezcla))),
+                        child: SizedBox(
+                          height: 64,
+                          child: Row(children: [
+                            SizedBox.square(dimension: 56, child: Mosaico(widget.jf, mezcla, radio: 4)),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text(mezcla.nombre, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                                const SizedBox(height: 3),
+                                Text('Mezcla · ${artistasDe(mezcla)}',
+                                    maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: textoSuave)),
+                              ]),
+                            ),
+                          ]),
+                        ),
+                      ),
+                  ]),
+                );
+              }
               // Descargado no depende de Jellyfin: sin red es lo unico que funciona.
               if (_filtro != _Filtro.descargado) {
                 if (snap.hasError) return _lista([...cabecera, const SizedBox(height: 24), Text('${snap.error}')]);
@@ -104,6 +137,7 @@ class _BibliotecaState extends State<Biblioteca> {
                 _Filtro.albumes => albumes,
                 _Filtro.artistas => artistas,
                 _Filtro.descargado => descargas!.albumes,
+                _Filtro.mezclas => const <Item>[], // resuelto arriba
               };
               if (!_aZ) {
                 items = esAlbum

@@ -2,7 +2,8 @@
 
 ### Requirement: Avisar a Jellyfin de lo que suena
 La app SHALL avisar a Jellyfin, con la sesión del usuario, cuando empieza una canción
-y hasta dónde sonó cuando se deja (cambio de canción, fin, pausa larga o cierre).
+y hasta dónde sonó cuando se deja (cambio de canción o fin de la cola). El cierre
+de la app no se detecta de forma fiable en iOS: esa última canción no se avisa.
 Jellyfin decide si cuenta como escuchada con su propio criterio (por defecto, pasar
 del 90 %), igual que con sus clientes oficiales, y entonces sube su contador y su
 fecha de última escucha.

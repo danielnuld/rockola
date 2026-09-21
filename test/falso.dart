@@ -10,6 +10,34 @@ class Falso {
   final busquedas = <String>[];
   int estadoFavorito = 200;
 
+  /// Avisos de reproduccion recibidos: "inicio:t1", "fin:t1@120".
+  final avisos = <String>[];
+  bool sesionesCaidas = false;
+
+  /// Canciones para las mezclas: 12 de rock (2000s, cuatro artistas) y 6 de rap (1970s, dos).
+  static final canciones = [
+    for (var i = 0; i < 12; i++)
+      {
+        'Id': 'r$i',
+        'Name': 'Rock $i',
+        'AlbumId': 'ra${i % 4}',
+        'AlbumArtist': 'Artista ${i % 4}',
+        'Genres': [i.isEven ? 'Rock' : 'Alternative'],
+        'ProductionYear': 2001 + i % 9,
+        'UserData': {'PlayCount': 0},
+      },
+    for (var i = 0; i < 6; i++)
+      {
+        'Id': 'h$i',
+        'Name': 'Rap $i',
+        'AlbumId': 'ha${i % 2}',
+        'AlbumArtist': 'Rapero ${i % 2}',
+        'Genres': [i.isEven ? 'Hip Hop' : 'Pop Rap'],
+        'ProductionYear': 1975,
+        'UserData': {'PlayCount': 0},
+      },
+  ];
+
   late final jf = Jellyfin('http://jf', 'tk', 'u', cliente: MockClient(_responder));
 
   static const _roomOnFire = {
@@ -31,6 +59,12 @@ class Falso {
       // Una red de verdad tarda: deja ver el estado optimista antes de la respuesta.
       await Future<void>.delayed(const Duration(milliseconds: 50));
       return estadoFavorito == 200 ? _json({'IsFavorite': r.method == 'POST'}) : http.Response('no', estadoFavorito);
+    }
+    if (ruta.startsWith('/Sessions/Playing')) {
+      if (sesionesCaidas) return http.Response('caído', 503);
+      final b = jsonDecode(r.body);
+      avisos.add(ruta.endsWith('Stopped') ? 'fin:${b['ItemId']}@${b['PositionTicks'] ~/ 10000000}' : 'inicio:${b['ItemId']}');
+      return http.Response('', 204);
     }
     if (ruta == '/Search/Hints') {
       busquedas.add(q['searchTerm']!);
@@ -54,6 +88,7 @@ class Falso {
             _roomOnFire,
             {'Id': 'a2', 'Name': 'Rumours', 'AlbumArtist': 'Fleetwood Mac', 'ProductionYear': 1977},
           ],
+        {'Fields': 'Genres,ProductionYear'} => canciones,
         {'ParentId': 'a1'} => [
             {'Id': 't1', 'Name': 'What Ever Happened?', 'AlbumId': 'a1', 'AlbumArtist': 'The Strokes', 'RunTimeTicks': 1740000000},
             {'Id': 't2', 'Name': 'Reptilia', 'AlbumId': 'a1', 'AlbumArtist': 'The Strokes', 'RunTimeTicks': 2200000000},

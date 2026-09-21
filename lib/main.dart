@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'armazon.dart';
 import 'descargas.dart';
+import 'escuchas.dart';
 import 'jellyfin.dart';
 import 'player.dart';
 import 'tema.dart';
@@ -34,7 +35,15 @@ Future<void> main() async {
     );
     red.onConnectivityChanged.listen((_) => d.reanudar());
   }
-  runApp(const Rockola());
+  final jf = savedSession();
+  if (jf != null) escuchar(jf);
+  runApp(Rockola(jf));
+}
+
+/// Empieza a avisar a Jellyfin de lo que suena, con esta sesion.
+void escuchar(Jellyfin jf) {
+  escuchas?.cerrar();
+  escuchas = Escuchas(jf, prefs)..iniciar();
 }
 
 // ponytail: el token va en SharedPreferences. Pasa al llavero de iOS junto con
@@ -45,11 +54,13 @@ Jellyfin? savedSession() {
 }
 
 class Rockola extends StatelessWidget {
-  const Rockola({super.key});
+  const Rockola(this.jf, {super.key});
+
+  final Jellyfin? jf;
 
   @override
   Widget build(BuildContext context) {
-    final jf = savedSession();
+    final jf = this.jf;
     return MaterialApp(
       title: 'Rockola',
       theme: tema,
@@ -80,6 +91,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final jf = await Jellyfin.login(_url.text, _user.text, _pass.text);
       await prefs.setStringList('session', [jf.url, jf.token, jf.userId]);
+      escuchar(jf);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => Armazon(jf)));
     } catch (e) {

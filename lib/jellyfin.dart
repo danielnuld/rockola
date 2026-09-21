@@ -92,6 +92,24 @@ class Jellyfin {
     return [for (final Item h in r['SearchHints']) {...h, 'Id': h['Id'] ?? h['ItemId']}];
   }
 
+  /// Todas las canciones con lo que usan las mezclas (UserData viene siempre).
+  Future<List<Item>> canciones() =>
+      _items({'IncludeItemTypes': 'Audio', 'Recursive': 'true', 'Fields': 'Genres,ProductionYear'});
+
+  // Avisos de reproduccion, como los clientes oficiales: Jellyfin decide con su
+  // criterio (90 %) si cuenta como escuchada. PlayedItems no sirve: solo cuenta
+  // la primera vez.
+  Future<void> empieza(String id) => _sesion('/Sessions/Playing', {'ItemId': id, 'PositionTicks': 0});
+
+  Future<void> termina(String id, Duration pos) =>
+      _sesion('/Sessions/Playing/Stopped', {'ItemId': id, 'PositionTicks': pos.inMicroseconds * 10});
+
+  Future<void> _sesion(String ruta, Map<String, Object> cuerpo) async {
+    final r = await _http.post(Uri.parse('$url$ruta'),
+        headers: {..._cabeceras, 'Content-Type': 'application/json'}, body: jsonEncode(cuerpo));
+    if (r.statusCode >= 300) throw Exception('Jellyfin respondio ${r.statusCode}');
+  }
+
   /// Marca o desmarca. Devuelve lo que quedo guardado.
   Future<bool> favorito(String id, bool si) async {
     final u = Uri.parse('$url/Users/$userId/FavoriteItems/$id');

@@ -4,9 +4,11 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 
 import 'biblioteca.dart';
+import 'escuchas.dart';
 import 'buscar.dart';
 import 'inicio.dart';
 import 'jellyfin.dart';
+import 'mezclas.dart';
 import 'player.dart';
 import 'reproductor.dart';
 import 'tema.dart';
@@ -39,6 +41,8 @@ class _ArmazonState extends State<Armazon> {
   final _navs = List.generate(4, (_) => GlobalKey<NavigatorState>());
   // Aqui y no en el Lateral: su build corre en cada cambio de seccion.
   late final _albumes = widget.jf.albums();
+  // Las mezclas del dia, una vez por sesion: el algoritmo es O(n²) por mezcla.
+  late final _mezclas = widget.jf.canciones().then((c) => mezclas(c, escuchas?.saltos ?? const {}, DateTime.now()));
 
   void _elegir(int i) {
     if (i == _actual) {
@@ -54,9 +58,9 @@ class _ArmazonState extends State<Armazon> {
   }
 
   Widget _raiz(int i) => switch (i) {
-        0 => Inicio(widget.jf, sintonizar: () => _elegir(3)),
+        0 => Inicio(widget.jf, sintonizar: () => _elegir(3), mezclas: _mezclas),
         1 => Buscar(widget.jf),
-        2 => Biblioteca(widget.jf),
+        2 => Biblioteca(widget.jf, mezclas: _mezclas),
         _ => const Vacio(icono: Icons.podcasts_rounded, titulo: 'Rockola FM', texto: 'La radio con locutora llega pronto.'),
       };
 

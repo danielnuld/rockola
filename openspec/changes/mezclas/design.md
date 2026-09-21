@@ -55,10 +55,21 @@ repetir, con `Random` sembrado por la fecha (año·10000 + mes·100 + día): mis
 mismas mezclas. Tope de 3 por artista y 25 por mezcla; después una pasada que separa
 canciones seguidas del mismo artista cuando hay con qué.
 
-**Qué mezclas.** Dos familias y dos décadas con más peso (escuchas; sin escuchas,
-número de canciones), "Lo más tuyo: <artista>" si hay escuchas y "Lo que casi no
-tocas" (sin escuchas, de las dos familias con más peso). Nombres de década:
-Sesentera, Setentera, Ochentera, Noventera, Dosmilera, "De los 2010", "De ahora".
+**Qué mezclas.** Dos familias y dos décadas con más peso, "Lo más tuyo: <artista>"
+(solo por escuchas) si las hay, y "Lo que casi no tocas" (sin escuchas, de las dos
+familias con más peso). Nombres de década: Sesentera, Setentera, Ochentera,
+Noventera, Dosmilera, "De los 2010", "De ahora"; en la descripción, en palabras
+("los ochenta").
+
+**Corregido al probar con la biblioteca real** (antes se pesaba solo por escuchas y
+con tope fijo de 3):
+- Peso de un grupo = canciones + 5 × escuchas. Con 15 escuchas en total, pesar solo
+  por escuchas ponía "Ochentera" (AC/DC, 5 escuchas) por delante de "Dosmilera", que
+  tiene tres veces más canciones: eso era azar, no gusto.
+- Tope por artista = `max(3, ⌈25 / artistas⌉)`. Con tope fijo, "Mezcla de rap" se
+  quedaba en 6 canciones porque el rap de la biblioteca es casi todo de dos artistas.
+- La misma canción en dos discos cuenta una vez ("Dreams" salía dos veces).
+Resultado: seis mezclas de 25 canciones, con las dos décadas más grandes (2010, 2000).
 
 **Todas las canciones en una consulta** (`Fields=Genres,ProductionYear`, con
 `UserData`), guardada en el `Armazon` como el resto de lo que se pide una vez por

@@ -4,6 +4,7 @@ import 'biblioteca.dart';
 import 'descargas.dart';
 import 'descargas_pantalla.dart';
 import 'jellyfin.dart';
+import 'mezclas.dart';
 import 'tema.dart';
 
 String saludo(DateTime t) => switch (t.hour) {
@@ -26,10 +27,11 @@ List<Item> albumesRecientes(List<Item> canciones, {int max = 6}) {
 }
 
 class Inicio extends StatefulWidget {
-  const Inicio(this.jf, {super.key, required this.sintonizar});
+  const Inicio(this.jf, {super.key, required this.sintonizar, required this.mezclas});
 
   final Jellyfin jf;
   final VoidCallback sintonizar;
+  final Future<List<Mezcla>> mezclas;
 
   @override
   State<Inicio> createState() => _InicioState();
@@ -86,8 +88,47 @@ class _InicioState extends State<Inicio> {
                 return _volver(albumesRecientes(snap.data ?? []));
               }),
             ),
+            FutureBuilder(
+              future: widget.mezclas,
+              // Sin canciones (sin red o con error) la seccion no se pinta.
+              builder: (context, snap) => (snap.data ?? const []).isEmpty ? const SizedBox.shrink() : _mezclasParaTi(snap.data!),
+            ),
           ],
         ),
+      );
+
+  Widget _mezclasParaTi(List<Mezcla> ms) => Padding(
+        padding: const EdgeInsets.only(top: 24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Mezclas para ti', style: Theme.of(context).textTheme.titleLarge),
+          const Text('Armadas en tu equipo con lo que escuchas', style: TextStyle(fontSize: 13, color: textoSuave)),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            // Fila en el telefono, cuadricula cuando hay ancho (web).
+            builder: (context, c) => c.maxWidth >= 700
+                ? GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 220,
+                      childAspectRatio: 0.72,
+                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 20,
+                    ),
+                    itemCount: ms.length,
+                    itemBuilder: (context, i) => TarjetaMezcla(widget.jf, ms[i]),
+                  )
+                : SizedBox(
+                    height: 210,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: ms.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      itemBuilder: (context, i) => SizedBox(width: 140, child: TarjetaMezcla(widget.jf, ms[i])),
+                    ),
+                  ),
+          ),
+        ]),
       );
 
   Widget _volver(List<Item> albumes) => albumes.isEmpty

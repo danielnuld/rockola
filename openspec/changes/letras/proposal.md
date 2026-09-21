@@ -6,15 +6,16 @@ puede resaltar la línea que suena como en Spotify o Apple Music. Issue #9.
 
 ## What Changes
 
-- **Servidor (ya hecho al abrir el cambio):** instalado en Jellyfin el plugin oficial
-  **LrcLib Lyrics** (lrclib.net: gratis, sin clave) y lanzada la tarea "Descargar
-  letras que faltan". Antes había letra en 80 de 768 canciones.
-- **Letra en el Reproductor**: botón "Letra" (solo si la canción tiene), que cambia la
-  portada por la letra; con ventana ancha, portada y letra lado a lado.
+- **De dónde salen**: de Jellyfin si la tiene (80 de 776 canciones); si no, Rockola
+  le pregunta directamente a **lrclib.net** (gratis, sin clave, con CORS abierto). El
+  plugin LrcLib de Jellyfin se instaló primero y no encontró ninguna (ver design.md).
+- **Letra en el Reproductor**: botón "Letra" en toda canción de la biblioteca, que
+  cambia la portada por la letra; con ventana ancha, portada y letra lado a lado.
 - **Sincronizada**: la línea que suena resaltada y centrada sola; tocar una línea salta
   a ese momento.
 - **Sin tiempos**: la letra entera, sin resaltar.
-- **Sin conexión**: la letra se guarda con la descarga (álbum o lista) y se lee de ahí.
+- **Sin conexión**: la letra (de Jellyfin o de lrclib) se guarda con la descarga
+  (álbum o lista) y se lee de ahí.
 
 ## Capabilities
 
@@ -26,6 +27,7 @@ puede resaltar la línea que suena como en Spotify o Apple Music. Issue #9.
 ## Impact
 
 - `lib/jellyfin.dart`: `letra(id)` sobre `/Audio/{id}/Lyrics`.
+- Nuevo `lib/lrclib.dart`: búsqueda exacta y amplia, elección del candidato y LRC.
 - Nuevo `lib/letras.dart` (vista de letra); `lib/reproductor.dart` gana el modo letra.
 - `lib/descargas.dart`: baja la letra junto a cada canción.
 - `cancion()` lleva `HasLyrics` en `extras`.

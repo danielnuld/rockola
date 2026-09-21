@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'jellyfin.dart';
+import 'lrclib.dart';
 
 /// El gestor de descargas. `null` en la web: ahi no se descarga, y la interfaz
 /// se esconde mirando esto.
@@ -124,7 +125,29 @@ class Descargas extends ChangeNotifier {
 
   static Item _pista(Jellyfin jf, Item t, Calidad c) {
     final (url, ext) = jf.descarga(t, c);
-    return {'item': t, 'url': url, 'archivo': '${t['Id']}.$ext', 'bytes': 0};
+    return {
+      'item': t,
+      'url': url,
+      'archivo': '${t['Id']}.$ext',
+      'bytes': 0,
+      // La letra viaja con la cancion para verla sin red: de Jellyfin si la
+      // tiene, si no se busca en lrclib al descargar.
+      if (t['HasLyrics'] == true)
+        'letra': jf.urlLetra(t['Id'])
+      else
+        'buscarLetra': {
+          'titulo': t['Name'],
+          'artista': (t['Artists'] as List?)?.firstOrNull ?? t['AlbumArtist'],
+          'album': t['Album'],
+          'seg': t['RunTimeTicks'] == null ? null : (t['RunTimeTicks'] as int) ~/ 10000000,
+        },
+    };
+  }
+
+  /// La letra guardada de una cancion descargada, tal como la dio Jellyfin.
+  String? letraGuardada(String itemId) {
+    final f = File(_ruta('$itemId.letra.json'));
+    return f.existsSync() ? f.readAsStringSync() : null;
   }
 
   Future<void> borrar(String albumId) async {
@@ -133,6 +156,7 @@ class Descargas extends ChangeNotifier {
     for (final p in pistas) {
       await _borrarSiEsta(_ruta(p['archivo']));
       await _borrarSiEsta(_ruta('${p['archivo']}.parte'));
+      await _borrarSiEsta(_ruta('${p['item']['Id']}.letra.json'));
     }
     await _borrarSiEsta(_ruta('$albumId.jpg'));
     await _guardar();
@@ -162,6 +186,7 @@ class Descargas extends ChangeNotifier {
       try {
         await _portada(albumId);
         p['bytes'] = await _bajar(p['url'], _ruta(p['archivo']));
+        await _guardarLetra(p);
         // Borrado mientras bajaba: el archivo recien llegado sobra.
         if (!_indice.containsKey(albumId)) await _borrarSiEsta(_ruta(p['archivo']));
         await _guardar();
@@ -173,6 +198,26 @@ class Descargas extends ChangeNotifier {
     }
     esperandoWifi = false;
     notifyListeners();
+  }
+
+  /// Sin letra la cancion sigue descargada: un fallo aqui no es motivo de fallo.
+  Future<void> _guardarLetra(Item p) async {
+    final destino = _ruta('${p['item']['Id']}.letra.json');
+    try {
+      if (p['letra'] != null) {
+        await _bajar(p['letra'], destino);
+        return;
+      }
+      final b = p['buscarLetra'];
+      if (b == null || b['titulo'] == null || b['artista'] == null) return;
+      final l = await Lrclib(cliente: _http).buscar(
+        titulo: b['titulo'],
+        artista: b['artista'],
+        album: b['album'],
+        dura: b['seg'] == null ? null : Duration(seconds: b['seg']),
+      );
+      if (l != null && l.isNotEmpty) await File(destino).writeAsString(jsonEncode(comoJellyfin(l)));
+    } catch (_) {}
   }
 
   (String, Item)? _siguiente() {

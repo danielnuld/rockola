@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'biblioteca.dart';
 import 'jellyfin.dart';
+import 'letras.dart';
 import 'listas.dart';
 import 'player.dart';
 import 'tema.dart';
@@ -88,10 +89,20 @@ void abrirCola(BuildContext context) => showModalBottomSheet(
       ),
     );
 
-class Reproductor extends StatelessWidget {
+class Reproductor extends StatefulWidget {
   const Reproductor(this.jf, {super.key});
 
   final Jellyfin jf;
+
+  @override
+  State<Reproductor> createState() => _ReproductorState();
+}
+
+class _ReproductorState extends State<Reproductor> {
+  Jellyfin get jf => widget.jf;
+
+  /// La letra en lugar de la portada. Se queda puesta al cambiar de cancion.
+  var _letra = false;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -103,9 +114,16 @@ class Reproductor extends StatelessWidget {
               final m = snap.data;
               if (m == null) return const SizedBox.shrink();
               final albumId = '${m.extras?['albumId'] ?? m.id}';
+              // Toda cancion de la biblioteca: si Jellyfin no la tiene, se pregunta a lrclib.
+              final hayLetra = m.extras?['itemId'] != null;
+              final conLetra = _letra && hayLetra;
+              // Con ventana ancha, portada y letra lado a lado.
+              final ancho = MediaQuery.sizeOf(context).width >= 900;
+              final portada = AspectRatio(aspectRatio: 1, child: Portada(url: '${m.artUri}', id: albumId, nombre: m.album ?? m.title, radio: 10));
+              final letra = SizedBox(height: ancho ? 420 : 380, child: VistaLetra(jf, m, key: ValueKey(m.id)));
               return Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 460),
+                  constraints: BoxConstraints(maxWidth: conLetra && ancho ? 960 : 460),
                   child: ListView(padding: const EdgeInsets.symmetric(horizontal: 16), children: [
                     Row(children: [
                       IconButton(
@@ -119,10 +137,26 @@ class Reproductor extends StatelessWidget {
                           Text(m.album ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                         ]),
                       ),
+                      if (hayLetra)
+                        IconButton(
+                          tooltip: conLetra ? 'Ocultar la letra' : 'Letra',
+                          color: conLetra ? coral : null,
+                          onPressed: () => setState(() => _letra = !_letra),
+                          icon: const Icon(Icons.lyrics_rounded),
+                        ),
                       IconButton(tooltip: 'Cola de reproducción', onPressed: () => abrirCola(context), icon: const Icon(Icons.queue_music_rounded)),
                     ]),
                     const SizedBox(height: 22),
-                    AspectRatio(aspectRatio: 1, child: Portada(url: '${m.artUri}', id: albumId, nombre: m.album ?? m.title, radio: 10)),
+                    if (!conLetra)
+                      portada
+                    else if (ancho)
+                      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        SizedBox(width: 420, child: portada),
+                        const SizedBox(width: 32),
+                        Expanded(child: letra),
+                      ])
+                    else
+                      letra,
                     const SizedBox(height: 30),
                     Row(children: [
                       Expanded(

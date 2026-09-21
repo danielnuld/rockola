@@ -77,6 +77,27 @@ class Falso {
       await Future<void>.delayed(const Duration(milliseconds: 50));
       return estadoFavorito == 200 ? _json({'IsFavorite': r.method == 'POST'}) : http.Response('no', estadoFavorito);
     }
+    // Letras: t2 sincronizada (0, 5 y 10 s), t1 plana, las demas sin letra.
+    if (ruta.startsWith('/Audio/') && ruta.endsWith('/Lyrics')) {
+      return switch (ruta.split('/')[2]) {
+        't2' => _json({
+            'Metadata': {},
+            'Lyrics': [
+              {'Text': 'Uno', 'Start': 0},
+              {'Text': 'Dos', 'Start': 50000000},
+              {'Text': 'Tres', 'Start': 100000000},
+            ],
+          }),
+        't1' => _json({
+            'Metadata': {},
+            'Lyrics': [
+              {'Text': 'Plana uno'},
+              {'Text': 'Plana dos'},
+            ],
+          }),
+        _ => http.Response('no', 404),
+      };
+    }
     if (ruta == '/Playlists' && r.method == 'POST') {
       final b = jsonDecode(r.body);
       return _json({'Id': nuevaLista(b['Name'], [...b['Ids']])});

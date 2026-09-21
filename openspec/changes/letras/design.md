@@ -10,6 +10,15 @@ Medido en el Jellyfin 10.11.11 de `nuld`:
   catálogo oficial tiene **LrcLib Lyrics** 3.0 para 10.11, y Jellyfin trae la tarea
   "Descargar letras que faltan" (`DownloadLyrics`).
 
+**Primer intento, en el servidor, y por qué no quedó**: se instaló el plugin oficial
+**LrcLib Lyrics** 3.0 y se lanzó `DownloadLyrics` (2 min 39 s): la cobertura siguió en
+80 de 776. `RemoteSearch/Lyrics` de *Reptilia* devolvía `[]` aunque lrclib.net la
+tiene (consultada desde el servidor y desde el contenedor: 200 en 0.4 s). Tampoco
+cambió con `UseStrictSearch: false` ni con LrcLib como proveedor de la biblioteca. El
+registro solo dice "Artist name is required" en 26 canciones sin artista. lrclib a
+veces responde 503 (saturado): puede que el plugin lo trague sin avisar. El plugin se
+queda instalado; Rockola no depende de él.
+
 ## Goals / Non-Goals
 
 **Goals:** letras en el reproductor, resaltadas cuando se puede, también sin red.
@@ -18,11 +27,16 @@ Medido en el Jellyfin 10.11.11 de `nuld`:
 
 ## Decisions
 
-**El proveedor es un plugin de Jellyfin, no código de Rockola.** Instalado LrcLib y
-lanzada `DownloadLyrics`: las letras llegan a la API que ya existe y a cualquier otro
-cliente de Jellyfin. La biblioteca está montada en solo lectura para el contenedor,
-así que `SaveLyricsWithMedia` se queda apagado y las letras viven en los metadatos de
-Jellyfin (en `/srv/config/jellyfin`, que ya se respalda).
+**Jellyfin primero, lrclib después, desde la app.** Lo que tenga Jellyfin se usa (y lo
+ven los demás clientes); lo demás se le pide a lrclib.net desde Rockola, que tiene
+CORS abierto y no pide clave. Búsqueda exacta (`/api/get`, exige la duración a ±2 s)
+y, si no, amplia (`/api/search`) con elección propia: mismo artista, no instrumental,
+duración a ≤ 5 s, sincronizada primero. Medido: "La Pelotona" (230 s) no aparece en la
+exacta y la amplia trae tres versiones de Cartel de Santa (226, 221 y 222 s),
+sincronizadas. `mejorCandidato` y el lector de LRC son puros y llevan prueba.
+
+**Un 503 no es "sin letra".** Un error de lrclib lanza y no se guarda en la caché, así
+que se reintenta al volver a abrirla; solo un 404 (o ningún candidato) es "no tiene".
 
 **Una línea actual pura**: `lineaActual(inicios, posicion)` es la última cuyo inicio
 es ≤ la posición (búsqueda lineal: son decenas de líneas), -1 antes de la primera. Con
@@ -38,14 +52,13 @@ animar si el usuario está arrastrando la lista.
 **La letra se pide al abrirla, con caché por canción en la sesión**: no se pide para
 cada canción que suena, solo para las que se miran.
 
-**Sin red, la de la descarga.** `Descargas` baja `<id>.letra.json` (la respuesta tal
-cual) después del audio si la canción tiene `HasLyrics`; un 404 o un fallo ahí no
-marca la canción como fallida. `letra()` en la vista: Jellyfin primero y, si falla, el
-archivo guardado.
+**Sin red, la de la descarga.** `Descargas` guarda `<id>.letra.json` después del audio:
+la de Jellyfin tal cual si `HasLyrics`, o la de lrclib convertida al mismo formato.
+Un fallo ahí no marca la canción como fallida. Sin red, la vista cae a ese archivo.
 
 ## Risks / Trade-offs
 
-- [LrcLib no tiene todo, sobre todo rap mexicano poco conocido] → Se mide la cobertura
-  al terminar la tarea (tarea 1.2); lo que falte, sin botón.
+- [lrclib no tiene todo, sobre todo rap mexicano poco conocido] → Se lee "Esta
+  canción no tiene letra"; se mide en la prueba real.
 - [Una letra sincronizada de otra versión de la canción va desfasada] → Es lo que
   devuelve LrcLib por título, artista, disco y duración; no se corrige en la app.

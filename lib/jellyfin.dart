@@ -4,6 +4,25 @@ import 'package:http/http.dart' as http;
 
 typedef Item = Map<String, dynamic>;
 
+/// Una linea de letra: su inicio si la letra esta sincronizada, y el texto.
+typedef Linea = ({Duration? inicio, String texto});
+
+/// Las lineas de una respuesta de /Audio/{id}/Lyrics. `Start` va en ticks (100 ns).
+List<Linea> lineasDeLetra(Map d) => [
+      for (final l in d['Lyrics'] as List? ?? const [])
+        (inicio: l['Start'] == null ? null : Duration(microseconds: (l['Start'] as int) ~/ 10), texto: '${l['Text'] ?? ''}'),
+    ];
+
+/// La linea que suena: la ultima que ya empezo. -1 antes de la primera o sin tiempos.
+int lineaActual(List<Linea> lineas, Duration pos) {
+  var actual = -1;
+  for (var i = 0; i < lineas.length; i++) {
+    final inicio = lineas[i].inicio;
+    if (inicio != null && inicio <= pos) actual = i;
+  }
+  return actual;
+}
+
 /// Calidad de descarga. Las AAC las comprime Jellyfin en el servidor.
 enum Calidad {
   original('Original', 'El archivo tal cual', 0),
@@ -206,6 +225,16 @@ class Jellyfin {
       'm4a',
     );
   }
+
+  /// La letra de una cancion, o null si no tiene.
+  Future<List<Linea>?> letra(String id) async {
+    final r = await _http.get(Uri.parse(urlLetra(id)), headers: _cabeceras);
+    if (r.statusCode == 404) return null;
+    if (r.statusCode != 200) throw Exception('Jellyfin respondio ${r.statusCode}');
+    return lineasDeLetra(jsonDecode(utf8.decode(r.bodyBytes)));
+  }
+
+  String urlLetra(String id) => '$url/Audio/$id/Lyrics?api_key=$token';
 
   String image(String id) => '$url/Items/$id/Images/Primary?maxHeight=400&api_key=$token';
 

@@ -33,12 +33,12 @@ class Locutor {
   }
 
   /// Texto y audio (como `data:` URI) de la entrada entre `antes` y `despues`.
-  Future<({String texto, String audio})?> entrada(MediaItem? antes, MediaItem despues, {bool poca = false}) async {
+  Future<({String texto, String audio})?> entrada(MediaItem? antes, MediaItem despues, {bool poca = false, bool dato = false}) async {
     try {
       final r = await _http
           .post(Uri.parse('$url/locutor'),
               headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({'antes': antes == null ? null : _cancion(antes), 'despues': _cancion(despues), 'charla': poca ? 'poca' : 'normal'}))
+              body: jsonEncode({'antes': antes == null ? null : _cancion(antes), 'despues': _cancion(despues), 'charla': poca ? 'poca' : 'normal', 'dato': dato}))
           // Medido: con la via rapida ~5 s; cuando cae al CLI, hasta ~50 s.
           .timeout(const Duration(seconds: 60));
       if (r.statusCode != 200) return null;
@@ -105,6 +105,9 @@ class SesionRadio extends ChangeNotifier {
   StreamSubscription<PlaybackState>? _sub;
   final _pedidas = <String>{};
 
+  /// Entradas entre canciones pedidas en esta hora: una si y otra no llevan dato.
+  var _entradas = 0;
+
   int get cada => pocaCharla ? 6 : 3;
 
   /// Lee el servidor guardado en Ajustes y le pregunta el nombre.
@@ -120,6 +123,7 @@ class SesionRadio extends ChangeNotifier {
     hora = [for (final c in horaDeRadio(mezclas, rumbo)) cancion(jf, c)];
     if (hora.isEmpty) return;
     _pedidas.clear();
+    _entradas = 0;
     await _sub?.cancel();
     // La apertura espera poco: mejor empezar sin locutor que con silencio.
     final apertura = await _pedir(null, hora.first).timeout(const Duration(seconds: 8), onTimeout: () => null);
@@ -140,7 +144,10 @@ class SesionRadio extends ChangeNotifier {
 
   Future<MediaItem?> _pedir(MediaItem? antes, MediaItem despues) async {
     if (locutor == null) return null;
-    final e = await locutor!.entrada(antes, despues, poca: pocaCharla);
+    // "De repente" un dato: una entrada si y otra no, nunca al abrir (no hay
+    // cancion de la que hablar) ni con menos charla.
+    final dato = antes != null && !pocaCharla && _entradas++ % 2 == 0;
+    final e = await locutor!.entrada(antes, despues, poca: pocaCharla, dato: dato);
     locutorCaido = e == null;
     notifyListeners();
     if (e == null) return null;

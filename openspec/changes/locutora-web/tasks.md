@@ -29,3 +29,8 @@
 - [ ] 5.2 En Chrome contra Giulia real (tras `ruta-radio`): sintonizar, oír la apertura y una entrada entre canciones, "Menos charla", "Cambiar el rumbo", y apagar el servidor a mitad para ver que sigue la música
 - [x] 5.3 IPA compilado (en iOS no cambia nada visible)
 - [ ] 5.4 Corregir en el lienzo lo que haya cambiado
+
+## 6. Datos entre canciones (pedido tras la primera prueba)
+
+- [x] 6.1 `dato` en el contrato (`docs/locutor.md`) y en `Locutor.entrada`
+- [x] 6.2 Una entrada sí y otra no, nunca en la apertura ni con menos charla; test

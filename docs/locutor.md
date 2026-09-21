@@ -23,7 +23,8 @@ Pide la entrada que va entre dos canciones.
 {
   "antes":   {"titulo": "Reptilia", "artista": "The Strokes", "album": "Room on Fire", "anio": 2003, "escuchas": 11},
   "despues": {"titulo": "Proud Mary", "artista": "Creedence Clearwater Revival", "anio": 1969, "escuchas": 0},
-  "charla":  "normal"
+  "charla":  "normal",
+  "dato":    true
 }
 ```
 
@@ -31,6 +32,10 @@ Pide la entrada que va entre dos canciones.
 - `despues` es obligatorio y necesita `titulo`. El resto de campos puede faltar.
 - `escuchas` son las de antes de hoy, según Jellyfin.
 - `charla` es `"normal"` (una o dos frases) o `"poca"` (una).
+- `dato` (opcional) pide que la entrada cuente algo interesante de la canción que
+  sonó o de su artista. El servidor decide de dónde lo saca y si lo tiene: sin una
+  fuente fiable, mejor sin dato que inventado. Rockola lo pide en una entrada sí y
+  otra no, nunca en la apertura ni con "Menos charla".
 
 Respuesta:
 

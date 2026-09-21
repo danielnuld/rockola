@@ -53,3 +53,15 @@ Las entradas de la locutora SHALL no avisarse a Jellyfin ni contarse como saltos
 #### Scenario: Saltar una entrada
 - **WHEN** se salta una entrada a los 3 segundos
 - **THEN** no se suma ningún salto ni se avisa nada
+
+### Requirement: Datos de vez en cuando
+Las entradas entre canciones SHALL pedir un dato al servidor (`dato: true`) una sí y
+otra no; la de apertura y todas las de "Menos charla" SHALL ir sin dato.
+
+#### Scenario: Una hora normal
+- **WHEN** se piden la apertura y tres entradas entre canciones
+- **THEN** el servidor recibe `dato` falso, verdadero, falso, verdadero
+
+#### Scenario: Menos charla
+- **WHEN** "Menos charla" está encendido
+- **THEN** ninguna entrada pide dato

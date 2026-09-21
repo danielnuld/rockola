@@ -101,6 +101,14 @@ void main() {
     expect(s.pedidos.last['charla'], 'normal');
   });
 
+  test('un dato una entrada si y otra no, nunca al abrir', () async {
+    await radio.sintonizar(mezclas);
+    await suena('c0'); // antes de la 4a
+    await suena('c1'); // antes de la 7a
+    await suena('c2'); // antes de la 10a
+    expect([for (final p in s.pedidos) p['dato']], [false, true, false, true]);
+  });
+
   test('con menos charla, cada seis y en una frase', () async {
     radio.menosCharla(true);
     await radio.sintonizar(mezclas);
@@ -109,6 +117,7 @@ void main() {
     await suena('c1'); // sexta
     expect(s.pedidos, hasLength(2));
     expect(s.pedidos.last['charla'], 'poca');
+    expect(s.pedidos.last['dato'], isFalse, reason: 'sin datos con menos charla');
     expect(esLocutor(cola.queue.value[posicion('a2') - 1]), isTrue);
   });
 

@@ -37,6 +37,6 @@
 ## 6. Cierre
 
 - [x] 6.1 `flutter analyze` y `flutter test` en verde
-- [ ] 6.2 Comprobar en Chrome: biblioteca, artista, álbum, reproductor con cola y búsqueda contra el Jellyfin real
-- [ ] 6.3 `gh workflow run ios.yml` y que el IPA compile
-- [ ] 6.4 Si algo del lienzo no funcionó igual en la app, corregir el lienzo
+- [x] 6.2 Comprobar en Chrome: biblioteca, artista, álbum, reproductor con cola y búsqueda contra el Jellyfin real
+- [x] 6.3 `gh workflow run ios.yml` y que el IPA compile
+- [x] 6.4 Si algo del lienzo no funcionó igual en la app, corregir el lienzo

@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'ajustes.dart';
 
 import 'biblioteca.dart';
 import 'escuchas.dart';
@@ -10,6 +13,7 @@ import 'inicio.dart';
 import 'jellyfin.dart';
 import 'mezclas.dart';
 import 'player.dart';
+import 'radio.dart';
 import 'reproductor.dart';
 import 'tema.dart';
 
@@ -43,6 +47,13 @@ class _ArmazonState extends State<Armazon> {
   late final _albumes = widget.jf.albums();
   // Las mezclas del dia, una vez por sesion: el algoritmo es O(n²) por mezcla.
   late final _mezclas = widget.jf.canciones().then((c) => mezclas(c, escuchas?.saltos ?? const {}, DateTime.now()));
+  late final _radio = SesionRadio(widget.jf);
+
+  @override
+  void dispose() {
+    _radio.dispose();
+    super.dispose();
+  }
 
   void _elegir(int i) {
     if (i == _actual) {
@@ -61,7 +72,10 @@ class _ArmazonState extends State<Armazon> {
         0 => Inicio(widget.jf, sintonizar: () => _elegir(3), mezclas: _mezclas),
         1 => Buscar(widget.jf),
         2 => Biblioteca(widget.jf, mezclas: _mezclas),
-        _ => const Vacio(icono: Icons.podcasts_rounded, titulo: 'Rockola FM', texto: 'La radio con locutora llega pronto.'),
+        // En el iPhone la radio es la fase 6 (en el telefono, sin servidor).
+        _ => kIsWeb
+            ? RadioPage(_radio, mezclas: _mezclas)
+            : const Vacio(icono: Icons.podcasts_rounded, titulo: 'Rockola FM', texto: 'La radio con locutora llega pronto.'),
       };
 
   @override
@@ -174,6 +188,17 @@ class Lateral extends StatelessWidget {
                   ]),
                 ),
               ),
+            InkWell(
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AjustesPage())),
+              child: const SizedBox(
+                height: 44,
+                child: Row(children: [
+                  Icon(Icons.settings_rounded, color: textoSuave),
+                  SizedBox(width: 14),
+                  Text('Ajustes', style: TextStyle(fontSize: 15, color: textoSuave)),
+                ]),
+              ),
+            ),
           ]),
         ),
         const SizedBox(height: 8),
@@ -252,7 +277,13 @@ class Vacio extends StatelessWidget {
 
 Widget _portadaDe(MediaItem m, double lado) => SizedBox.square(
       dimension: lado,
-      child: Portada(url: '${m.artUri}', id: '${m.extras?['albumId'] ?? m.id}', nombre: m.album ?? m.title, radio: 5),
+      // Mientras habla la locutora no hay portada: el cuadro ambar de la radio.
+      child: esLocutor(m)
+          ? DecoratedBox(
+              decoration: BoxDecoration(color: ambar, borderRadius: BorderRadius.circular(5)),
+              child: Icon(Icons.podcasts_rounded, color: tinta, size: lado * 0.55),
+            )
+          : Portada(url: '${m.artUri}', id: '${m.extras?['albumId'] ?? m.id}', nombre: m.album ?? m.title, radio: 5),
     );
 
 Widget _botonPlay({double lado = 44, Color? fondo, Color color = texto}) => StreamBuilder<PlaybackState>(

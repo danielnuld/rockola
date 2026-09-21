@@ -26,6 +26,9 @@ MediaItem cancion(Jellyfin jf, Item t) {
       'itemId': t['Id'],
       'albumId': albumId,
       'fav': t['UserData']?['IsFavorite'] ?? false,
+      // Para la locutora: lo que dice sale de aqui, sin volver a pedir nada.
+      'anio': t['ProductionYear'],
+      'escuchas': t['UserData']?['PlayCount'],
       if (local != null) 'local': local.calidad.detalle,
     },
   );

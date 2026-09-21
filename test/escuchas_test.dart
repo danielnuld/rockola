@@ -90,4 +90,17 @@ void main() {
     expect(f.avisos.where((a) => a.startsWith('fin:')), ['fin:t1@200', 'fin:t2@190', 'fin:t3@180']);
     expect(prefs.getStringList('fines'), isEmpty);
   });
+
+  test('las entradas del locutor no se avisan ni cuentan como salto', () async {
+    h.queue.add([
+      const MediaItem(id: 'data:audio/ogg;base64,eA==', title: 'Giulia habla', extras: {'locutor': true, 'texto': 'hola'}),
+      cancion('t1', 220),
+    ]);
+    estado(0, 0);
+    estado(0, 3);
+    estado(1, 0);
+    await pumpEventQueue();
+    expect(e.saltos, isEmpty);
+    expect(f.avisos, ['inicio:t1']);
+  });
 }

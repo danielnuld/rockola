@@ -48,6 +48,13 @@ class Player extends BaseAudioHandler with QueueHandler, SeekHandler {
     await _p.setAudioSources([for (final m in items) AudioSource.uri(Uri.parse(m.id))]);
   }
 
+  /// Meter algo a media reproduccion: las entradas de la locutora de la radio.
+  @override
+  Future<void> insertQueueItem(int index, MediaItem mediaItem) async {
+    queue.add([...queue.value]..insert(index, mediaItem));
+    await _p.insertAudioSource(index, AudioSource.uri(Uri.parse(mediaItem.id)));
+  }
+
   /// audio_service no tiene volumen: va como accion propia, para la barra web.
   @override
   Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) async {

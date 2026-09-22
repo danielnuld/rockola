@@ -4,6 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,13 +17,23 @@ import 'tema.dart';
 
 late final SharedPreferences prefs;
 
+/// Windows de escritorio (ni web ni iPhone).
+final escritorio = !kIsWeb && Platform.isWindows;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
-  player = await AudioService.init(
-    builder: Player.new,
-    config: const AudioServiceConfig(androidNotificationChannelName: 'Rockola'),
-  );
+  if (escritorio) {
+    // just_audio no trae Windows: suena por libmpv, como la terminal. Y
+    // audio_service tampoco: ahi el reproductor va sin controles del sistema.
+    JustAudioMediaKit.ensureInitialized();
+    player = Player();
+  } else {
+    player = await AudioService.init(
+      builder: Player.new,
+      config: const AudioServiceConfig(androidNotificationChannelName: 'Rockola'),
+    );
+  }
   if (!kIsWeb) {
     final red = Connectivity();
     final d = descargas = await Descargas.abrir(

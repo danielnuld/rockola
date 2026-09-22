@@ -491,9 +491,10 @@ String pintarInterfaz(Interfaz ui, int w, int h) {
   } else {
     final tiempos = ' ${tiempo(v.posicion)} / ${v.duracion == null ? '–:––' : tiempo(v.duracion!)} ';
     final mini = barras(v.bandas, 1, 1, ascii: ascii).first;
-    final miniAncho = v.bandas.length * 2 - 1;
+    // Lo que mide de verdad: con color, el espacio del final queda antes del reset.
+    final miniAncho = visible(mini);
     final titulo = ajusta(' ${v.pausa ? '‖' : '▶'} ${v.titulo} · ${v.detalle}', max(10, interior - miniAncho - tiempos.length - 2));
-    lineas.add('${b.v}${fuerte(titulo)}  $mini${' ' * max(0, miniAncho - visible(mini))}$tiempos${b.v}');
+    lineas.add('${b.v}${fuerte(titulo)}  $mini$tiempos${b.v}');
     final abajo = ui.mensaje ?? v.aviso ?? v.linea;
     final texto = abajo == null ? '' : ' ${abajo == v.linea ? '♪ ' : ''}$abajo';
     lineas.add(b.v + (abajo == v.linea ? coral(ajusta(texto, interior)) : suave(ajusta(texto, interior))) + b.v);

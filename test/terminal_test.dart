@@ -178,9 +178,23 @@ void main() {
     return ui;
   }
 
-  test('interfaz: cada línea mide justo el ancho, en color y en ASCII', () async {
-    for (final ascii in [false, true]) {
+  test('interfaz: cada línea mide justo el ancho, en color y en ASCII, sonando o no', () async {
+    for (final (ascii, sonando) in [(false, false), (true, false), (false, true), (true, true)]) {
       final ui = await interfaz(ascii: ascii);
+      if (sonando) {
+        ui.ahora = (
+          titulo: 'Reptilia',
+          detalle: 'The Strokes — Room on Fire',
+          posicion: const Duration(seconds: 51),
+          duracion: const Duration(seconds: 221),
+          pausa: false,
+          bandas: List.filled(16, 0.6),
+          picos: List.filled(16, 0.7),
+          linea: 'Tell us a story',
+          siguienteLinea: null,
+          aviso: null,
+        );
+      }
       final s = pintarInterfaz(ui, 90, 20);
       final lineas = s.split(RegExp('\x1b\\[\\d+;1H')).skip(1).map((l) => l.replaceAll(RegExp('\x1b\\[[0-9;]*[A-Za-z]'), '')).toList();
       expect(lineas, hasLength(20));

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rockola · tu música de Jellyfin, con radio y visualizador</title>
+<meta name="description" content="Rockola es un reproductor para tu servidor Jellyfin en el iPhone, en el navegador y en la terminal: mezclas del día, radio con locutora, letras sincronizadas y visualizador.">
+<meta property="og:title" content="Rockola">
+<meta property="og:description" content="Tu música de Jellyfin en el iPhone, la web y la terminal, con radio con locutora, letras y visualizador.">
+<meta property="og:image" content="media/web-inicio.webp">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23FF6B3D'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23141110'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fondo: #141110;
+    --profundo: #0b0908;
+    --panel: #1b1715;
+    --superficie: #2a2421;
+    --texto: #f4ede6;
+    --suave: #b3a79c;
+    --coral: #ff6b3d;
+    --ambar: #f5b841;
+    --tinta: #1a0e08;
+    --ancho: 1120px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--fondo);
+    color: var(--texto);
+    font: 17px/1.6 'DM Sans', system-ui, sans-serif;
+  }
+  img, video { display: block; max-width: 100%; height: auto; }
+  a { color: var(--coral); }
+  a:hover { color: var(--ambar); }
+  h1, h2, h3 { font-family: 'Bricolage Grotesque', sans-serif; line-height: 1.05; margin: 0; }
+  h2 { font-size: clamp(30px, 4.4vw, 46px); font-weight: 800; letter-spacing: -0.5px; }
+  h3 { font-size: 22px; font-weight: 700; }
+  .contenedor { max-width: var(--ancho); margin: 0 auto; padding: 0 20px; }
+  .etiqueta { font-size: 13px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ambar); }
+  .suave { color: var(--suave); }
+
+  /* Cabecera */
+  header { position: sticky; top: 0; z-index: 10; background: rgba(20, 17, 16, 0.86); backdrop-filter: blur(10px); border-bottom: 1px solid #2a2421aa; }
+  header .contenedor { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+  .marca { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px; color: var(--coral); text-decoration: none; }
+  header nav { display: flex; gap: 22px; }
+  header nav a { color: var(--suave); text-decoration: none; font-size: 15px; }
+  header nav a:hover { color: var(--texto); }
+
+  /* Portada */
+  .portada { padding: 72px 0 40px; text-align: center; }
+  .portada h1 { font-size: clamp(44px, 8vw, 88px); font-weight: 800; letter-spacing: -2px; }
+  .portada h1 span { color: var(--coral); }
+  .portada p { max-width: 640px; margin: 20px auto 0; font-size: 19px; color: var(--suave); }
+  .botones { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+  .boton { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 24px; font-weight: 700; text-decoration: none; }
+  .boton.lleno { background: var(--coral); color: var(--tinta); }
+  .boton.lleno:hover { background: var(--ambar); color: var(--tinta); }
+  .boton.borde { border: 1px solid var(--superficie); color: var(--texto); }
+  .boton.borde:hover { border-color: var(--suave); color: var(--texto); }
+  .video { margin: 48px auto 0; max-width: 1040px; border-radius: 14px; overflow: hidden; border: 1px solid var(--superficie); box-shadow: 0 30px 80px #000a; background: var(--profundo); }
+  .video video { width: 100%; height: auto; aspect-ratio: 1280 / 800; }
+  .plataformas { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
+  .plataformas span { padding: 6px 14px; border-radius: 16px; background: var(--panel); color: var(--suave); font-size: 14px; }
+
+  /* Secciones de funciones */
+  section { padding: 84px 0; scroll-margin-top: 62px; }
+  section + section { border-top: 1px solid #2a242166; }
+  .funcion { display: grid; grid-template-columns: 1fr 1.35fr; gap: 56px; align-items: center; }
+  .funcion.invertida { grid-template-columns: 1.35fr 1fr; }
+  .funcion.invertida .texto { order: 2; }
+  .texto h2 { margin: 10px 0 16px; }
+  .texto p { margin: 0 0 14px; color: var(--suave); }
+  .texto ul { margin: 0; padding-left: 20px; color: var(--suave); }
+  .texto li { margin: 6px 0; }
+  .captura { border-radius: 12px; overflow: hidden; border: 1px solid var(--superficie); box-shadow: 0 24px 60px #0009; }
+
+  /* Visualizador: los cuatro estilos */
+  .estilos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .estilos figure { margin: 0; position: relative; }
+  .estilos figcaption { position: absolute; left: 12px; bottom: 10px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px; text-shadow: 0 2px 8px #000; }
+
+  /* Telefonos */
+  .telefonos { display: flex; gap: 22px; justify-content: center; align-items: flex-end; flex-wrap: wrap; margin-top: 44px; }
+  .telefono { width: 230px; border-radius: 34px; padding: 9px; background: #000; border: 1px solid #333; box-shadow: 0 24px 60px #000b; }
+  .telefono img { border-radius: 26px; }
+  .telefono.alto { width: 250px; }
+  .centrado { text-align: center; max-width: 720px; margin: 0 auto; }
+  .centrado p { color: var(--suave); }
+
+  /* Terminal */
+  .terminales { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 40px; }
+  .terminales img { border-radius: 10px; box-shadow: 0 24px 60px #000b; }
+
+  /* Tabla de plataformas */
+  .tabla { width: 100%; border-collapse: collapse; margin-top: 30px; font-size: 16px; }
+  .tabla th, .tabla td { padding: 12px 14px; border-bottom: 1px solid var(--superficie); text-align: center; }
+  .tabla th:first-child, .tabla td:first-child { text-align: left; }
+  .tabla thead th { font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; }
+  .si { color: var(--coral); font-weight: 700; }
+  .no { color: #6f655d; }
+
+  /* Pasos */
+  .pasos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
+  .paso { background: var(--panel); border-radius: 14px; padding: 24px; }
+  .paso .numero { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 34px; color: var(--coral); }
+  .paso p { color: var(--suave); margin: 8px 0 0; }
+  code { font: 15px 'Cascadia Mono', Consolas, monospace; background: var(--profundo); padding: 2px 6px; border-radius: 6px; color: var(--texto); }
+
+  footer { padding: 40px 0 60px; color: var(--suave); font-size: 15px; border-top: 1px solid #2a242166; }
+  footer .contenedor { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+
+  @media (max-width: 860px) {
+    header nav { display: none; }
+    .funcion, .funcion.invertida { grid-template-columns: 1fr; gap: 28px; }
+    .funcion.invertida .texto { order: 0; }
+    .terminales, .pasos { grid-template-columns: 1fr; }
+    section { padding: 60px 0; }
+    .telefono { width: 42%; min-width: 150px; }
+    .tabla { font-size: 14px; }
+    .tabla th, .tabla td { padding: 10px 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="contenedor">
+    <a class="marca" href="#">Rockola</a>
+    <nav aria-label="Secciones">
+      <a href="#mezclas">Mezclas</a>
+      <a href="#radio">Radio</a>
+      <a href="#letras">Letras</a>
+      <a href="#visualizador">Visualizador</a>
+      <a href="#terminal">Terminal</a>
+      <a href="#empezar">Empezar</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="portada">
+    <div class="contenedor">
+      <h1>Tu Jellyfin,<br><span>como una rockola</span></h1>
+      <p>Un reproductor para la música de tu propio servidor: mezclas del día que aprenden de lo que escuchas, una radio con locutora, letras sincronizadas y un visualizador como el de antes. En el iPhone, en el navegador y en la terminal.</p>
+      <div class="botones">
+        <a class="boton lleno" href="https://github.com/danielnuld/rockola/releases/latest">Descargar la última versión</a>
+        <a class="boton borde" href="https://github.com/danielnuld/rockola">Ver el código</a>
+      </div>
+      <div class="plataformas" aria-label="Plataformas">
+        <span>iPhone</span><span>Web</span><span>Terminal de Windows</span>
+      </div>
+      <div class="video">
+        <video src="media/recorrido.mp4" poster="media/recorrido-portada.jpg" autoplay muted loop playsinline controls aria-label="Recorrido por Rockola web: un álbum, el visualizador y la letra"></video>
+      </div>
+    </div>
+  </div>
+
+  <section id="mezclas">
+    <div class="contenedor funcion">
+      <div class="texto">
+        <div class="etiqueta">Mezclas del día</div>
+        <h2>Tu biblioteca, ordenada por lo que te gusta</h2>
+        <p>Rockola arma mezclas con los géneros, las décadas y los artistas que tienes, y las inclina hacia lo que más escuchas. Son las mismas todo el día; mañana, otras.</p>
+        <ul>
+          <li>«Lo más tuyo», de tu artista más escuchado.</li>
+          <li>«Lo que casi no tocas», para redescubrir.</li>
+          <li>Cada escucha cuenta en Jellyfin, desde cualquier plataforma.</li>
+        </ul>
+      </div>
+      <img class="captura" src="media/web-inicio.webp" width="1440" height="900" loading="lazy" alt="Inicio de Rockola web: la tarjeta de la radio, álbumes para volver a escuchar y las mezclas del día">
+    </div>
+  </section>
+
+  <section id="radio">
+    <div class="contenedor funcion invertida">
+      <div class="texto">
+        <div class="etiqueta">Rockola FM</div>
+        <h2>Una radio con locutora</h2>
+        <p>Una hora de radio hecha con tus mezclas. Cada pocas canciones, una voz presenta la siguiente y a veces cuenta un dato del artista o del disco.</p>
+        <p>La voz la pone un <strong>servidor del locutor</strong> que eliges tú: un servicio HTTP con dos rutas, con el modelo y la voz que quieras. Ninguna clave vive en la app. Sin él, la radio suena igual, solo con música.</p>
+        <p><a href="https://github.com/danielnuld/rockola/blob/main/docs/locutor.md">Contrato del servidor del locutor →</a></p>
+      </div>
+      <img class="captura" src="media/web-radio.webp" width="1440" height="900" loading="lazy" alt="La radio en la web: la locutora al aire, la siguiente canción y la rotación de la hora">
+    </div>
+  </section>
+
+  <section id="letras">
+    <div class="contenedor funcion">
+      <div class="texto">
+        <div class="etiqueta">Letras</div>
+        <h2>Canta encima</h2>
+        <p>Las letras de Jellyfin si las tiene y, si no, las de <a href="https://lrclib.net">lrclib.net</a>. La línea que suena se ilumina y se centra sola, y tocar cualquier otra salta a ese momento de la canción.</p>
+        <p>En el iPhone, la letra se guarda con la descarga para verla sin conexión.</p>
+      </div>
+      <img class="captura" src="media/web-letra.webp" width="1440" height="900" loading="lazy" alt="El reproductor con la portada de Room on Fire y la letra de Reptilia al lado">
+    </div>
+  </section>
+
+  <section id="visualizador">
+    <div class="contenedor">
+      <div class="centrado">
+        <div class="etiqueta">Visualizador</div>
+        <h2 style="margin-top:10px">Como el Windows Media Player de XP</h2>
+        <p>Cuatro estilos que siguen la música: Barras, Ambiente, Batería y Ondas. Tocar la pantalla cambia de estilo. Funciona porque cada canción tiene una <strong>huella</strong>, 16 bandas de frecuencia veinte veces por segundo, que calcula una vez en tu servidor <code>servidor/huellas.py</code> (~70 KB por canción).</p>
+      </div>
+      <div class="estilos" style="margin-top:40px">
+        <figure><img class="captura" src="media/web-visual-barras.webp" width="1440" height="900" loading="lazy" alt="Estilo Barras: dieciséis barras de coral a ámbar con sus picos"><figcaption>Barras</figcaption></figure>
+        <figure><img class="captura" src="media/web-visual-ambiente.webp" width="1440" height="900" loading="lazy" alt="Estilo Ambiente: una forma de color que respira con la música"><figcaption>Ambiente</figcaption></figure>
+        <figure><img class="captura" src="media/web-visual-bateria.webp" width="1440" height="900" loading="lazy" alt="Estilo Batería: anillos que giran y chispas con los graves"><figcaption>Batería</figcaption></figure>
+        <figure><img class="captura" src="media/web-visual-ondas.webp" width="1440" height="900" loading="lazy" alt="Estilo Ondas: círculos que nacen del centro con cada golpe de graves"><figcaption>Ondas</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="iphone">
+    <div class="contenedor">
+      <div class="centrado">
+        <div class="etiqueta">En el bolsillo</div>
+        <h2 style="margin-top:10px">Hecho para el iPhone</h2>
+        <p>La misma app, pensada para una mano. Descarga álbumes y listas comprimidos por Jellyfin a la calidad que elijas (hasta ~4 veces menos espacio), con su portada, su letra y su huella, y escúchalos en modo avión.</p>
+      </div>
+      <div class="telefonos">
+        <div class="telefono"><img src="media/movil-inicio.webp" width="1170" height="2532" loading="lazy" alt="Inicio en el teléfono"></div>
+        <div class="telefono alto"><img src="media/movil-letra.webp" width="1170" height="2532" loading="lazy" alt="La letra en el teléfono, con la línea que suena en coral"></div>
+        <div class="telefono"><img src="media/movil-visual-barras.webp" width="1170" height="2532" loading="lazy" alt="El visualizador de barras en el teléfono"></div>
+      </div>
+      <p class="suave" style="text-align:center;font-size:14px;margin-top:22px">Capturas de la interfaz del teléfono tomadas en el navegador: es la misma app de Flutter que se instala en el iPhone.</p>
+    </div>
+  </section>
+
+  <section id="terminal">
+    <div class="contenedor">
+      <div class="centrado">
+        <div class="etiqueta">Terminal</div>
+        <h2 style="margin-top:10px">Y en la terminal, también</h2>
+        <p>Para equipos donde el navegador pesa demasiado: la misma interfaz en texto, con la radio, la letra y el visualizador en bloques de color. Gasta unos 20 MB y casi nada de CPU; suena por <a href="https://mpv.io">mpv</a>. Todo con el teclado, y con <code>--ascii</code> para consolas viejas.</p>
+      </div>
+      <div class="terminales">
+        <img src="media/terminal-interfaz.webp" width="924" height="607" loading="lazy" alt="Rockola en la terminal: barra lateral, resultados de búsqueda y lo que suena abajo, con la letra">
+        <img src="media/terminal-visual.webp" width="898" height="516" loading="lazy" alt="El visualizador de barras en la terminal, con la línea de la letra">
+      </div>
+    </div>
+  </section>
+
+  <section id="plataformas">
+    <div class="contenedor">
+      <div class="centrado">
+        <div class="etiqueta">Plataformas</div>
+        <h2 style="margin-top:10px">Qué hay en cada una</h2>
+      </div>
+      <table class="tabla">
+        <thead><tr><th scope="col"></th><th scope="col">iPhone</th><th scope="col">Web</th><th scope="col">Terminal</th></tr></thead>
+        <tbody>
+          <tr><td>Biblioteca, álbumes, artistas y búsqueda</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
+          <tr><td>Mezclas del día</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
+          <tr><td>Listas de Jellyfin</td><td class="si">✓</td><td class="si">✓</td><td class="suave">tocar</td></tr>
+          <tr><td>Radio con locutora</td><td class="suave">pronto</td><td class="si">✓</td><td class="si">✓</td></tr>
+          <tr><td>Letras sincronizadas</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
+          <tr><td>Visualizador</td><td class="si">✓</td><td class="si">✓</td><td class="suave">en texto</td></tr>
+          <tr><td>Descargas y modo sin conexión</td><td class="si">✓</td><td class="no">—</td><td class="no">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="empezar">
+    <div class="contenedor">
+      <div class="centrado">
+        <div class="etiqueta">Empezar</div>
+        <h2 style="margin-top:10px">Solo necesitas tu Jellyfin</h2>
+        <p>Rockola se conecta a tu servidor con tu usuario de siempre. La locutora y el visualizador son opcionales.</p>
+      </div>
+      <div class="pasos">
+        <div class="paso">
+          <div class="numero">1</div>
+          <h3>Descarga</h3>
+          <p>De la <a href="https://github.com/danielnuld/rockola/releases/latest">última versión</a>: el IPA para el iPhone (se instala con Sideloadly), la web para servirla donde quieras o la terminal para Windows.</p>
+        </div>
+        <div class="paso">
+          <div class="numero">2</div>
+          <h3>Entra</h3>
+          <p>Con la dirección de tu Jellyfin, tu usuario y tu contraseña. En la terminal, en <code>rockola.json</code>.</p>
+        </div>
+        <div class="paso">
+          <div class="numero">3</div>
+          <h3>Suma lo opcional</h3>
+          <p>Un <a href="https://github.com/danielnuld/rockola/blob/main/docs/locutor.md">servidor del locutor</a> para que la radio hable y el <a href="https://github.com/danielnuld/rockola/blob/main/docs/huellas.md">servidor de huellas</a> para que el visualizador siga la música.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="contenedor">
+    <span>Rockola · hecho con Flutter para Jellyfin</span>
+    <span><a href="https://github.com/danielnuld/rockola">GitHub</a> · <a href="https://github.com/danielnuld/rockola/releases">Versiones</a> · <a href="https://github.com/danielnuld/rockola#readme">README</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

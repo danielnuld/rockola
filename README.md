@@ -5,6 +5,9 @@ iPhone, en el navegador y en la terminal. Mezclas del día hechas con lo que esc
 una radio con locutora que presenta las canciones, letras sincronizadas y un
 visualizador a la manera del Windows Media Player de XP.
 
+**[Ver la página, con capturas y video](https://danielnuld.github.io/rockola/)** ·
+**[Descargar](../../releases/latest)**
+
 ## Qué hace
 
 | | iPhone | Web | Terminal |

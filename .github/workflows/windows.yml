@@ -45,3 +45,4 @@ jobs:
           gh release view "v${{ inputs.version }}" *> $null
           if ($LASTEXITCODE -eq 0) { gh release upload "v${{ inputs.version }}" build/instalador/RockolaSetup.exe --clobber }
           else { "Sin release v${{ inputs.version }}: el instalador queda como artefacto." }
+          exit 0  # si no, pwsh sale con el codigo de "gh release view"

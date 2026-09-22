@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rockola · tu música de Jellyfin, con radio y visualizador</title>
-<meta name="description" content="Rockola es un reproductor para tu servidor Jellyfin en el iPhone, en el navegador y en la terminal: mezclas del día, radio con locutora, letras sincronizadas y visualizador.">
+<meta name="description" content="Rockola es un reproductor para tu servidor Jellyfin en el iPhone, en Windows, en el navegador y en la terminal: mezclas del día, radio con locutora, letras sincronizadas y visualizador.">
 <meta property="og:title" content="Rockola">
-<meta property="og:description" content="Tu música de Jellyfin en el iPhone, la web y la terminal, con radio con locutora, letras y visualizador.">
+<meta property="og:description" content="Tu música de Jellyfin en el iPhone, Windows, la web y la terminal, con radio con locutora, letras y visualizador.">
 <meta property="og:image" content="media/web-inicio.webp">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23FF6B3D'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23141110'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -147,13 +147,13 @@
   <div class="portada">
     <div class="contenedor">
       <h1>Tu Jellyfin,<br><span>como una rockola</span></h1>
-      <p>Un reproductor para la música de tu propio servidor: mezclas del día que aprenden de lo que escuchas, una radio con locutora, letras sincronizadas y un visualizador como el de antes. En el iPhone, en el navegador y en la terminal.</p>
+      <p>Un reproductor para la música de tu propio servidor: mezclas del día que aprenden de lo que escuchas, una radio con locutora, letras sincronizadas y un visualizador como el de antes. En el iPhone, en Windows, en el navegador y en la terminal.</p>
       <div class="botones">
         <a class="boton lleno" href="https://github.com/danielnuld/rockola/releases/latest">Descargar la última versión</a>
         <a class="boton borde" href="https://github.com/danielnuld/rockola">Ver el código</a>
       </div>
       <div class="plataformas" aria-label="Plataformas">
-        <span>iPhone</span><span>Web</span><span>Terminal de Windows</span>
+        <span>iPhone</span><span>Windows</span><span>Web</span><span>Terminal</span>
       </div>
       <div class="video">
         <video src="media/recorrido.mp4" poster="media/recorrido-portada.jpg" autoplay muted loop playsinline controls aria-label="Recorrido por Rockola web: un álbum, el visualizador y la letra"></video>
@@ -241,6 +241,7 @@
         <h2 style="margin-top:10px">Y en la terminal, también</h2>
         <p>Para equipos donde el navegador pesa demasiado: la misma interfaz en texto, con la radio, la letra y el visualizador en bloques de color. Gasta unos 20 MB y casi nada de CPU; suena por <a href="https://mpv.io">mpv</a>. Todo con el teclado, y con <code>--ascii</code> para consolas viejas.</p>
       </div>
+      <p class="centrado suave" style="margin-top:18px">¿Prefieres ventanas? En Windows también está la app completa, con <code>RockolaSetup.exe</code>: la misma que la web, sin navegador.</p>
       <div class="terminales">
         <img src="media/terminal-interfaz.webp" width="924" height="607" loading="lazy" alt="Rockola en la terminal: barra lateral, resultados de búsqueda y lo que suena abajo, con la letra">
         <img src="media/terminal-visual.webp" width="898" height="516" loading="lazy" alt="El visualizador de barras en la terminal, con la línea de la letra">
@@ -255,15 +256,15 @@
         <h2 style="margin-top:10px">Qué hay en cada una</h2>
       </div>
       <table class="tabla">
-        <thead><tr><th scope="col"></th><th scope="col">iPhone</th><th scope="col">Web</th><th scope="col">Terminal</th></tr></thead>
+        <thead><tr><th scope="col"></th><th scope="col">iPhone</th><th scope="col">Windows</th><th scope="col">Web</th><th scope="col">Terminal</th></tr></thead>
         <tbody>
-          <tr><td>Biblioteca, álbumes, artistas y búsqueda</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
-          <tr><td>Mezclas del día</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
-          <tr><td>Listas de Jellyfin</td><td class="si">✓</td><td class="si">✓</td><td class="suave">tocar</td></tr>
-          <tr><td>Radio con locutora</td><td class="suave">pronto</td><td class="si">✓</td><td class="si">✓</td></tr>
-          <tr><td>Letras sincronizadas</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
-          <tr><td>Visualizador</td><td class="si">✓</td><td class="si">✓</td><td class="suave">en texto</td></tr>
-          <tr><td>Descargas y modo sin conexión</td><td class="si">✓</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Biblioteca, álbumes, artistas y búsqueda</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
+          <tr><td>Mezclas del día</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
+          <tr><td>Listas de Jellyfin</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td><td class="suave">tocar</td></tr>
+          <tr><td>Radio con locutora</td><td class="suave">pronto</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
+          <tr><td>Letras sincronizadas</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td></tr>
+          <tr><td>Visualizador</td><td class="si">✓</td><td class="si">✓</td><td class="si">✓</td><td class="suave">en texto</td></tr>
+          <tr><td>Descargas y modo sin conexión</td><td class="si">✓</td><td class="si">✓</td><td class="no">—</td><td class="no">—</td></tr>
         </tbody>
       </table>
     </div>
@@ -280,7 +281,7 @@
         <div class="paso">
           <div class="numero">1</div>
           <h3>Descarga</h3>
-          <p>De la <a href="https://github.com/danielnuld/rockola/releases/latest">última versión</a>: el IPA para el iPhone (se instala con Sideloadly), la web para servirla donde quieras o la terminal para Windows.</p>
+          <p>De la <a href="https://github.com/danielnuld/rockola/releases/latest">última versión</a>: el instalador para Windows, el IPA para el iPhone (se instala con Sideloadly), la web para servirla donde quieras o la versión de terminal.</p>
         </div>
         <div class="paso">
           <div class="numero">2</div>

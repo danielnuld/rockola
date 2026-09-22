@@ -1,7 +1,7 @@
 # Rockola
 
 Un reproductor de música para tu servidor [Jellyfin](https://jellyfin.org): en el
-iPhone, en el navegador y en la terminal. Mezclas del día hechas con lo que escuchas,
+iPhone, en Windows, en el navegador y en la terminal. Mezclas del día hechas con lo que escuchas,
 una radio con locutora que presenta las canciones, letras sincronizadas y un
 visualizador a la manera del Windows Media Player de XP.
 
@@ -10,16 +10,16 @@ visualizador a la manera del Windows Media Player de XP.
 
 ## Qué hace
 
-| | iPhone | Web | Terminal |
-|---|:---:|:---:|:---:|
-| Biblioteca, álbumes, artistas y búsqueda | ✓ | ✓ | ✓ |
-| Mezclas del día | ✓ | ✓ | ✓ |
-| Listas de Jellyfin (crear, añadir, reordenar) | ✓ | ✓ | solo tocar |
-| Radio con locutora | pronto | ✓ | ✓ |
-| Letras sincronizadas | ✓ | ✓ | ✓ |
-| Visualizador | ✓ | ✓ | en texto |
-| Descargas comprimidas y modo sin conexión | ✓ | | |
-| Escuchas contadas en Jellyfin | ✓ | ✓ | ✓ |
+| | iPhone | Windows | Web | Terminal |
+|---|:---:|:---:|:---:|:---:|
+| Biblioteca, álbumes, artistas y búsqueda | ✓ | ✓ | ✓ | ✓ |
+| Mezclas del día | ✓ | ✓ | ✓ | ✓ |
+| Listas de Jellyfin (crear, añadir, reordenar) | ✓ | ✓ | ✓ | solo tocar |
+| Radio con locutora | pronto | ✓ | ✓ | ✓ |
+| Letras sincronizadas | ✓ | ✓ | ✓ | ✓ |
+| Visualizador | ✓ | ✓ | ✓ | en texto |
+| Descargas comprimidas y modo sin conexión | ✓ | ✓ | | |
+| Escuchas contadas en Jellyfin | ✓ | ✓ | ✓ | ✓ |
 
 - **Mezclas del día.** Salen de los géneros, las décadas y los artistas de tu
   biblioteca, y se inclinan hacia lo que más escuchas. Las mismas en todo el día; al
@@ -51,6 +51,13 @@ visualizador a la manera del Windows Media Player de XP.
 Por ahora sin App Store: el IPA de cada [release](../../releases) va sin firmar y se
 instala con [Sideloadly](https://sideloadly.io) y tu Apple ID. Con un Apple ID gratuito
 la app caduca a los 7 días y hay que volver a instalarla.
+
+### Windows
+
+Descarga `RockolaSetup.exe` de la release y ábrelo. Se instala en tu carpeta de
+usuario, sin permisos de administrador, con su acceso en el menú Inicio. No está
+firmado, así que Windows avisa la primera vez: «Más información» → «Ejecutar de todas
+formas». Es la misma app que la web, en su propia ventana; suena por libmpv.
 
 ### Web
 
@@ -112,7 +119,9 @@ y el IPA sale de GitHub Actions.
 flutter run -d web-server --web-port 5000     # la app, en http://localhost:5000
 flutter analyze && flutter test               # antes de cada commit
 dart build cli -t bin/rockola.dart -o build/cli   # la terminal
+flutter build windows --release               # la app de escritorio
 gh workflow run ios.yml                       # el IPA sin firmar, como artefacto
+gh workflow run windows.yml -f version=X.Y.Z   # el instalador de Windows
 ```
 
 - `lib/`: la app. `jellyfin.dart`, `mezclas.dart`, `locutor.dart`, `huella.dart` y

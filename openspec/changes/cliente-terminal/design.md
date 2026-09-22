@@ -56,9 +56,11 @@ datos móviles.
 **Voz de la locutora a un archivo temporal.** `entrada` devuelve un `data:` URI; se
 escribe como `.ogg` en la carpeta temporal y se borra al salir.
 
-**Sesión y ajustes en un JSON** (`%APPDATA%\Rockola\config.json`): URL, token y
-usuario de Jellyfin (nunca la contraseña), servidor del locutor y servidor de huellas.
-`rockola login <url> <usuario>` pide la contraseña sin eco.
+**Configuración en un JSON escrito a mano, decidido por Daniel**: `rockola.json` junto
+al `.exe` (para llevarlo en una memoria) o, si no hay, `%APPDATA%\Rockola\config.json`.
+Lleva `url` y `usuario` de Jellyfin y, opcionales, `huellas`, `locutor` y `mpv`. Sin
+comandos de configuración: sin token, pide la contraseña sin eco y guarda en el mismo
+archivo solo `token` y `usuarioId`. Un 401 de Jellyfin borra el token para pedirla otra vez.
 
 **Pantalla con secuencias ANSI, sin paquetes.** Buffer alterno (`ESC[?1049h`), cursor
 oculto, y cada cuadro se escribe desde `ESC[H` de una vez (sin borrar: no parpadea). Al
@@ -68,10 +70,27 @@ salir, incluso con Ctrl+C, se restaura la terminal. Teclas con
 **Visualizador:** las 16 bandas del cuadro actual (`cuadroEn` con la posición de mpv)
 repartidas en el ancho de la terminal, alto de 8 filas con los 8 bloques parciales de
 Unicode. Color de 24 bits por fila, de coral abajo a ámbar arriba. `--ascii`:
-`.:-=+*#%@` y sin color. Sin huella, `sintetico`.
+` .:+#` y sin color. Sin huella, `sintetico`.
 
 **Escuchas** con `jf.empieza` y `jf.termina`, que funcionan con la sesión del usuario
 (con la API key del servidor fallaban, pero aquí siempre hay sesión).
+
+**La interfaz, como la web (decidido por Daniel entre esta y una estilo cmus).**
+`Reproductor` (mpv, cola, escuchas, huella, letra, locutora) no pinta ni lee teclas;
+`Interfaz` encima tiene una pila de páginas por sección. Cada página es una lista de
+filas `(texto, detalle, accion)`; las que cargan de Jellyfin guardan lo cargado y las
+vivas (Cola, Radio) se recalculan en cada cuadro. Sin paquetes de TUI: `pintarInterfaz`
+es una función que devuelve la pantalla como texto, cada línea en su fila con
+`ESC[fila;1H` (sin saltos de línea que desplacen la pantalla) y del ancho exacto de la
+terminal, que se lee en cada cuadro (redimensionar funciona solo). Se repinta a 20 fps
+con el tic y en cada tecla. En ASCII, los símbolos de la interfaz se cambian uno por
+uno (mismo ancho) y los acentos de los nombres se quedan.
+
+**Vigía dentro de mpv.** En Windows mpv no muere con quien lo lanzó: cerrar la
+ventana dejaba la música sonando. Un script Lua de 5 líneas que se le pasa con
+`--script` lo cierra si pasan 5 s sin `script-message rockola-vivo`, que Rockola manda
+en cada tic. Medido: mpv sale 6.1 s después de matar `rockola.exe`. Cubre cerrar la
+ventana, matar el proceso y que se caiga, sin tocar la API de Windows.
 
 ## Risks / Trade-offs
 

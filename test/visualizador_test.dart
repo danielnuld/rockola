@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:rockola/ajustes.dart';
 import 'package:rockola/descargas.dart';
+import 'package:rockola/huella.dart';
 import 'package:rockola/player.dart';
 import 'package:rockola/tema.dart';
 import 'package:rockola/visualizador.dart';

@@ -5,6 +5,7 @@ import 'descargas.dart';
 import 'descargas_pantalla.dart';
 import 'jellyfin.dart';
 import 'mezclas.dart';
+import 'mezclas_pantalla.dart';
 import 'tema.dart';
 
 String saludo(DateTime t) => switch (t.hour) {

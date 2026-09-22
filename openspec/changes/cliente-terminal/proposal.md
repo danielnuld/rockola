@@ -11,10 +11,15 @@ compilado gasta 0.2 % de un núcleo y 18 MB (mpv, 1.6 % y 73 MB). Issue #7.
 
 - **`rockola.exe`**, un cliente de terminal en el mismo repo, que reutiliza el código
   puro de la app (Jellyfin, letras, mezclas, radio, huellas).
-- **Elegir qué suena con comandos** en vez de una biblioteca navegable:
-  `rockola <búsqueda>`, `rockola mezclas` y `rockola radio`.
-- **Una pantalla "Suena"** con la canción, el progreso, la letra y el visualizador,
-  manejada con teclas: pausa, siguiente, anterior, adelantar, cambiar de estilo y salir.
+- **Una interfaz interactiva como la web, pedida por Daniel** después de probar la
+  primera versión por comandos: barra lateral (Inicio, Buscar, Biblioteca, Mezclas,
+  Listas, Radio, Cola), la lista en el centro y lo que suena abajo, con un visualizador
+  de una línea y la letra. Todo con teclado; `v` pone el visualizador a pantalla
+  completa. `rockola <búsqueda>`, `mezclas` y `radio` la abren en esa sección.
+- **Configuración en un JSON escrito a mano**, junto al `.exe` o en `%APPDATA%`; la
+  contraseña se pide la primera vez y se guarda solo el token.
+- **La música no sobrevive a la ventana**: mpv se cierra solo si Rockola muere sin
+  cerrarlo.
 - **Visualizador de barras** con bloques Unicode y el degradado coral-ámbar en color;
   con `--ascii`, solo caracteres ASCII y sin color, para consolas viejas. Sin huella,
   el mismo patrón sintético que la app.
@@ -26,8 +31,8 @@ compilado gasta 0.2 % de un núcleo y 18 MB (mpv, 1.6 % y 73 MB). Issue #7.
 ## Capabilities
 
 ### New Capabilities
-- `terminal`: el cliente de terminal: sesión, comandos, pantalla "Suena", teclas,
-  visualizador en texto y radio.
+- `terminal`: el cliente de terminal: configuración y sesión, la interfaz, el
+  visualizador en texto, la radio y las escuchas.
 
 ### Modified Capabilities
 (ninguna: la reorganización no cambia requisitos)
@@ -48,7 +53,9 @@ compilado gasta 0.2 % de un núcleo y 18 MB (mpv, 1.6 % y 73 MB). Issue #7.
 
 ## Fuera de alcance
 
-- Navegar la biblioteca por pantallas (artistas, álbumes, listas): primero los comandos.
+- Artistas en la Biblioteca, favoritos y editar listas desde la terminal: la Biblioteca
+  lista álbumes; a un artista se llega buscándolo.
+- Ratón.
 - Descargas y modo sin conexión.
 - Los estilos Ambiente, Batería y Ondas en texto: primero las barras.
 - Linux y macOS: mpv usa ahí un socket Unix en vez de tubería. Se añade si hace falta.

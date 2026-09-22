@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'radio.dart';
+import 'locutor.dart';
 import 'tema.dart';
 import 'visualizador.dart';
 

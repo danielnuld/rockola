@@ -6,6 +6,7 @@ import 'descargas_pantalla.dart';
 import 'jellyfin.dart';
 import 'listas.dart';
 import 'mezclas.dart';
+import 'mezclas_pantalla.dart';
 import 'player.dart';
 import 'tema.dart';
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
@@ -9,85 +8,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ajustes.dart';
 import 'biblioteca.dart';
 import 'jellyfin.dart';
+import 'locutor.dart';
 import 'mezclas.dart';
 import 'player.dart';
 import 'tema.dart';
 
-/// Cliente del servidor del locutor (contrato en docs/locutor.md). Los errores
-/// vuelven como null: sin locutor, la radio suena igual.
-class Locutor {
-  Locutor(String url, {http.Client? cliente})
-      : url = url.trim().replaceAll(RegExp(r'/+$'), ''),
-        _http = cliente ?? http.Client();
-
-  final String url;
-  final http.Client _http;
-
-  Future<String?> nombre() async {
-    try {
-      final r = await _http.get(Uri.parse('$url/locutor')).timeout(const Duration(seconds: 8));
-      return r.statusCode == 200 ? jsonDecode(r.body)['nombre'] as String? : null;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// Texto y audio (como `data:` URI) de la entrada entre `antes` y `despues`.
-  Future<({String texto, String audio})?> entrada(MediaItem? antes, MediaItem despues, {bool poca = false, bool dato = false}) async {
-    try {
-      final r = await _http
-          .post(Uri.parse('$url/locutor'),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({'antes': antes == null ? null : _cancion(antes), 'despues': _cancion(despues), 'charla': poca ? 'poca' : 'normal', 'dato': dato}))
-          // Medido: con la via rapida ~5 s; cuando cae al CLI, hasta ~50 s.
-          .timeout(const Duration(seconds: 60));
-      if (r.statusCode != 200) return null;
-      final d = jsonDecode(utf8.decode(r.bodyBytes));
-      final audio = d['audio'] as String?;
-      if (audio == null) return null; // sin voz no hay entrada que sonar
-      return (texto: d['texto'] as String, audio: 'data:${d['formato'] ?? 'audio/ogg'};base64,$audio');
-    } catch (_) {
-      return null;
-    }
-  }
-
-  static Map<String, Object?> _cancion(MediaItem m) => {
-        'titulo': m.title,
-        'artista': m.artist,
-        'album': m.album,
-        'anio': m.extras?['anio'],
-        'escuchas': m.extras?['escuchas'],
-      };
-}
-
-/// Una hora de radio: por turnos de las mezclas del dia, sin repetir. `rumbo`
-/// rota por cual mezcla se empieza y sigue, en cada mezcla, donde se quedo el
-/// rumbo anterior: solo rotar daba las mismas canciones en otro orden.
-List<Item> horaDeRadio(List<Mezcla> mezclas, int rumbo, {int n = 16}) {
-  if (mezclas.isEmpty) return const [];
-  final m = mezclas.length;
-  final orden = [for (var i = 0; i < m; i++) mezclas[(i + rumbo) % m]];
-  final paso = (n / m).ceil(); // canciones que una hora toma de cada mezcla
-  final tomadas = List.filled(m, 0);
-  final vistas = <String>{};
-  final hora = <Item>[];
-  var sinAvance = 0;
-  for (var i = 0; hora.length < n && sinAvance < m; i = (i + 1) % m) {
-    final canciones = orden[i].canciones;
-    Item? elegida;
-    while (elegida == null && tomadas[i] < canciones.length) {
-      final c = canciones[(rumbo * paso + tomadas[i]++) % canciones.length];
-      if (vistas.add('${c['Id']}')) elegida = c;
-    }
-    if (elegida != null) {
-      hora.add(elegida);
-      sinAvance = 0;
-    } else {
-      sinAvance++;
-    }
-  }
-  return hora;
-}
+/// Los datos de un `MediaItem` que pide el locutor.
+Cancion datosDe(MediaItem m) =>
+    (titulo: m.title, artista: m.artist, album: m.album, anio: m.extras?['anio'] as int?, escuchas: m.extras?['escuchas'] as int?);
 
 bool esLocutor(MediaItem? m) => m?.extras?['locutor'] == true;
 
@@ -168,7 +96,7 @@ class SesionRadio extends ChangeNotifier {
     // "De repente" un dato: una entrada si y otra no, nunca al abrir (no hay
     // cancion de la que hablar) ni con menos charla.
     final dato = antes != null && !pocaCharla && _entradas++ % 2 == 0;
-    final e = await locutor!.entrada(antes, despues, poca: pocaCharla, dato: dato);
+    final e = await locutor!.entrada(antes == null ? null : datosDe(antes), datosDe(despues), poca: pocaCharla, dato: dato);
     locutorCaido = e == null;
     notifyListeners();
     if (e == null) return null;

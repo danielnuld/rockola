@@ -28,10 +28,10 @@ Un JSON escrito a mano. Rockola lo busca en este orden:
 
 ```json
 {
-  "url": "http://100.102.40.65:8096",
-  "usuario": "daniel",
-  "huellas": "http://100.102.40.65:8788",
-  "locutor": "http://100.102.40.65:8787"
+  "url": "http://tu-servidor:8096",
+  "usuario": "tu-usuario",
+  "huellas": "http://tu-servidor:8788",
+  "locutor": "http://tu-servidor:8787"
 }
 ```
 

@@ -5,7 +5,7 @@ del `AudioHandler` global `player`, `Biblioteca` (cuadrícula provisional) y `Al
 (lista pelada) en `lib/biblioteca.dart`, `Portada` con reemplazo de color. El plano son
 los artboards **iPhone · Biblioteca**, **iPhone · Álbum** y **iPhone · Reproductor**.
 
-Probado contra el Jellyfin de `nuld` antes de escribir esto:
+Probado contra el Jellyfin de casa antes de escribir esto:
 - `/Users/{id}/Items?searchTerm=strokes` **no encuentra nada**: solo compara con el nombre
   de canciones y álbumes, nunca con el artista.
 - `/Search/Hints?searchTerm=…&includeItemTypes=Audio,MusicAlbum,MusicArtist` sí:

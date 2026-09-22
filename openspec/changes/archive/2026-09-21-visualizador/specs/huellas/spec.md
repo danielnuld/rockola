@@ -32,12 +32,12 @@ no conoce SHALL dar 404.
 no la tenga, informando el avance, y un fallo en una canción SHALL no parar el resto.
 
 #### Scenario: Biblioteca entera
-- **WHEN** se corre `--todas` en `nuld`
+- **WHEN** se corre `--todas` en casa
 - **THEN** al terminar hay una huella por canción y un resumen de cuántas fallaron
 
 ### Requirement: Acceso
 El servicio SHALL escuchar en `127.0.0.1` y en la IP de Tailscale, y mandar CORS solo a
-los orígenes configurados, como el núcleo de Giulia.
+los orígenes configurados, como el servidor del locutor.
 
 #### Scenario: Desde Chrome
 - **WHEN** Rockola web en `http://localhost:5000` pide una huella

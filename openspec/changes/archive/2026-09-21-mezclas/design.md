@@ -1,6 +1,6 @@
 ## Context
 
-Medido en el Jellyfin de `nuld` (622 canciones):
+Medido en el Jellyfin de casa (622 canciones):
 - 12 escuchadas, 15 reproducciones, 0 favoritas. Rockola no avisa de nada.
 - Géneros: Rock 163, sin género 116, Pop 48, Hip Hop 40, Pop Rap 31, Alternative 30,
   Hispanic Hip Hop 24, Blues Rock 24, Gangsta Rap 18, Rap/Hip Hop 18, Hip-Hop/Rap 18…
@@ -78,7 +78,7 @@ sesión; las mezclas se calculan de ahí.
 ## Risks / Trade-offs
 
 - [Sin comprobar que los avisos cuenten con la sesión de Daniel] → Tarea 1.4 lo mira
-  contra `nuld` antes de seguir; si no cuenta, el plan B es `PlayedItems` para la
+  contra casa antes de seguir; si no cuenta, el plan B es `PlayedItems` para la
   primera escucha y la cuenta de repeticiones en local.
 - [Con el historial vacío las mezclas son de género y década, sin gusto personal] →
   Es lo mejor que se puede con cero datos; mejoran en cuanto Rockola avisa.

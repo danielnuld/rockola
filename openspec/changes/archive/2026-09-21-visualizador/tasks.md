@@ -2,7 +2,7 @@
 
 - [x] 1.1 `servidor/huellas.py`: `huella(archivo)` (el cálculo de la prueba), servidor con `GET /huella/{id}`, caché con el tamaño del archivo, CORS por lista, 127.0.0.1 + Tailscale, `--todas` y `--check` con un tono de 1 kHz
 - [x] 1.2 `servidor/huellas.service` y `docs/huellas.md` (contrato y cómo montarlo)
-- [x] 1.3 En `nuld`: `python3-numpy`, `--check`, instalar y arrancar el servicio (sudo: si queda bloqueado, lo corre Daniel)
+- [x] 1.3 En casa: `python3-numpy`, `--check`, instalar y arrancar el servicio (sudo: si queda bloqueado, lo corre Daniel)
 - [x] 1.4 `--todas` sobre la biblioteca: tiempo, espacio y fallos
 - [x] 1.5 Probar desde Windows por Tailscale: una huella, un 404 y el CORS
 

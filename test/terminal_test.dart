@@ -141,10 +141,10 @@ void main() {
   test('config: sin token no hay sesión; la sesión se guarda sin tocar lo escrito', () async {
     final dir = await Directory.systemTemp.createTemp('cfg');
     addTearDown(() => dir.delete(recursive: true));
-    final f = File('${dir.path}/rockola.json')..writeAsStringSync('{"url": "http://nuld:8096/", "usuario": "daniel", "huellas": " http://nuld:8788/ "}');
+    final f = File('${dir.path}/rockola.json')..writeAsStringSync('{"url": "http://tu-servidor:8096/", "usuario": "daniel", "huellas": " http://tu-servidor:8788/ "}');
     final c = Config(f);
     expect(c.jellyfin, isNull);
-    expect((c['url'], c['huellas'], c['locutor']), ('http://nuld:8096', 'http://nuld:8788', null));
+    expect((c['url'], c['huellas'], c['locutor']), ('http://tu-servidor:8096', 'http://tu-servidor:8788', null));
 
     c.guardarSesion(Falso().jf);
     final otra = Config(f);
@@ -154,7 +154,7 @@ void main() {
 
     otra.guardarSesion(null); // sesion caducada
     expect(Config(f).jellyfin, isNull);
-    expect(Config(f)['url'], 'http://nuld:8096');
+    expect(Config(f)['url'], 'http://tu-servidor:8096');
   });
 
   test('teclas: flechas, páginas, Esc suelto, Enter, y la ñ entera', () {

@@ -68,10 +68,10 @@ void main() {
     expect(s.pedidas.where((u) => u.contains('/huella/')), isEmpty, reason: 'sin servidor no se pide');
     await sin.borrar('a1');
 
-    SharedPreferences.setMockInitialValues({'huellas': 'http://nuld:8788/'});
+    SharedPreferences.setMockInitialValues({'huellas': 'http://tu-servidor:8788/'});
     final d = await Descargas.abrir(dir, cliente: s.cliente, prefs: await SharedPreferences.getInstance());
     await d.pedir(jf, album, pistas);
-    expect(s.pedidas, contains('http://nuld:8788/huella/t2'));
+    expect(s.pedidas, contains('http://tu-servidor:8788/huella/t2'));
     expect(d.huellaGuardada('t2'), 'audio de t2');
     await d.borrar('a1');
     expect(d.huellaGuardada('t2'), isNull);

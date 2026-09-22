@@ -4,7 +4,7 @@ Tras la fase 2: `cancion(jf, item)` hace todos los `MediaItem` con la URL de str
 como `id`; `Player` reproduce con `AudioSource.uri`, que acepta `file://` igual que
 `http://`. `AlbumPage` pide item y canciones a Jellyfin sin alternativa si falla.
 
-Medido en el Jellyfin de `nuld`:
+Medido en el Jellyfin de casa:
 - 622 canciones, 39.0 horas, 8.16 GB en original (499 mp3, 123 flac).
 - `/Audio/{id}/universal` con `AudioCodec=aac`, `TranscodingContainer=m4a`,
   `TranscodingProtocol=http` y `MaxStreamingBitrate` entrega `audio/mp4`. Reptilia

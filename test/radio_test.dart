@@ -202,8 +202,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(MaterialApp(theme: tema, home: const AjustesPage()));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).first, 'http://100.102.40.65:8787 ');
+    await tester.enterText(find.byType(TextField).first, 'http://tu-servidor:8787 ');
     await tester.pumpAndSettle();
-    expect((await SharedPreferences.getInstance()).getString('locutor'), 'http://100.102.40.65:8787');
+    expect((await SharedPreferences.getInstance()).getString('locutor'), 'http://tu-servidor:8787');
   });
 }

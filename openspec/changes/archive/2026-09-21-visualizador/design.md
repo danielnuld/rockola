@@ -1,6 +1,6 @@
 ## Context
 
-Prueba hecha en `nuld` antes de escribir esto (script en el scratchpad, mismo cálculo):
+Prueba hecha en casa antes de escribir esto (script en el scratchpad, mismo cálculo):
 - ffmpeg decodifica a mono 22 050 Hz, FFT de 2048 con ventana de Hann cada 50 ms, 16
   bandas logarítmicas de 40 Hz a 11 kHz, dB, y cada banda normalizada entre su 5 % y
   su 99.5 % dentro de la canción → un byte.
@@ -9,7 +9,7 @@ Prueba hecha en `nuld` antes de escribir esto (script en el scratchpad, mismo c�
 - Pintadas como imagen, se ven la batería de *Reptilia* (rayas regulares), su riff en
   medios, la entrada de la banda a los 13 s, y el beat de *La Pelotona* a los 11.5 s.
 - Las dos se mueven (desviación ~60 de 255 por banda): las barras no se quedan quietas.
-- En `nuld`: ffmpeg 8, Python 3.14 sin numpy (se instala `python3-numpy` por apt, lo
+- En casa: ffmpeg 8, Python 3.14 sin numpy (se instala `python3-numpy` por apt, lo
   único que no pide contraseña), puerto 8788 libre, 22 GB libres.
 
 ## Goals / Non-Goals

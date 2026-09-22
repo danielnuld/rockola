@@ -71,7 +71,7 @@ void main() {
     expect(s.pedidos, isEmpty);
     expect(await huellaDe(const MediaItem(id: 'data:audio/ogg;base64,eA==', title: 'Giulia')), isNull);
 
-    SharedPreferences.setMockInitialValues({'huellas': 'http://nuld:8788/'});
+    SharedPreferences.setMockInitialValues({'huellas': 'http://tu-servidor:8788/'});
     s.caido = true;
     expect(await huellaDe(suena('a1')), isNull);
     s.caido = false;
@@ -85,9 +85,9 @@ void main() {
   test('probarHuellas: el 404 con error es el servicio; lo demas no', () async {
     final s = Huellas();
     clienteHuellas = s.cliente;
-    expect(await probarHuellas('http://nuld:8788'), isTrue);
+    expect(await probarHuellas('http://tu-servidor:8788'), isTrue);
     s.caido = true;
-    expect(await probarHuellas('http://nuld:8788'), isFalse);
+    expect(await probarHuellas('http://tu-servidor:8788'), isFalse);
   });
 
   test('los cuatro estilos pintan, con golpes y sin ellos', () {
@@ -134,11 +134,11 @@ void main() {
     clienteHuellas = s.cliente;
     await tester.pumpWidget(MaterialApp(theme: tema, home: const AjustesPage()));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).last, 'http://100.102.40.65:8788');
+    await tester.enterText(find.byType(TextField).last, 'http://tu-servidor:8788');
     await tester.tap(find.text('Guardar y probar').last);
     await tester.pumpAndSettle();
     expect(find.text('Responde.'), findsOneWidget);
-    expect((await SharedPreferences.getInstance()).getString('huellas'), 'http://100.102.40.65:8788');
+    expect((await SharedPreferences.getInstance()).getString('huellas'), 'http://tu-servidor:8788');
   });
 
   test('sin red, la huella guardada con la descarga', () async {
@@ -146,7 +146,7 @@ void main() {
     addTearDown(() => dir.delete(recursive: true));
     File('${dir.path}/c1.huella.json').writeAsStringSync(jsonEncode(jsonDe(_chica)));
     descargas = await Descargas.abrir(dir);
-    SharedPreferences.setMockInitialValues({'huellas': 'http://nuld:8788'});
+    SharedPreferences.setMockInitialValues({'huellas': 'http://tu-servidor:8788'});
     clienteHuellas = MockClient((_) async => throw const SocketException('sin red'));
     expect((await huellaDe(suena('c1')))?.cuadros, 3);
   });

@@ -1,6 +1,6 @@
 ## Context
 
-Probado contra el Jellyfin 10.11.11 de `nuld` con una lista de usar y tirar (borrada):
+Probado contra el Jellyfin 10.11.11 de casa con una lista de usar y tirar (borrada):
 - `POST /Playlists` (`Name`, `Ids`, `UserId`, `MediaType: Audio`) crea: 200 con el `Id`.
 - `POST /Playlists/{id}/Items?ids=…` añade: 204.
 - `GET /Playlists/{id}/Items?userId=…` da las canciones, cada una con su

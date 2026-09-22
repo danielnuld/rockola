@@ -16,9 +16,8 @@ context: |
     texto y Piper local (sherpa-onnx, es_AR-daniela-high) para la voz. Nunca
     llama a Claude ni a ningun servidor.
   - Web: un endpoint HTTP configurable ("servidor del locutor") que devuelve
-    texto y audio. En la instalacion de Daniel es el nucleo de Giulia en `nuld`
-    (jarvis-m710q, puerto 8787): Claude por el CLI de la suscripcion con Gemini
-    de via rapida, y Piper del propio servidor. Ninguna clave en el navegador.
+    texto y audio (contrato en docs/locutor.md). Cada quien monta el suyo con el
+    modelo y la voz que quiera. Ninguna clave en el navegador.
     Sin respuesta del servidor, la musica sigue sin locutor.
   Plano visual: lienzo https://claude.ai/artifact/D14THDp29xLNVPMe49iS4m
   (seis pantallas iPhone, dos web, barra inferior). Se implementa literal de ahi.

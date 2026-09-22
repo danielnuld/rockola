@@ -28,10 +28,10 @@ La configuración se lee de rockola.json junto a rockola.exe o, si no hay, de
 
 /// Lo que se escribe en el archivo de configuracion.
 const _ejemplo = '''{
-  "url": "http://100.102.40.65:8096",
-  "usuario": "daniel",
-  "huellas": "http://100.102.40.65:8788",
-  "locutor": "http://100.102.40.65:8787"
+  "url": "http://tu-servidor:8096",
+  "usuario": "tu-usuario",
+  "huellas": "http://tu-servidor:8788",
+  "locutor": "http://tu-servidor:8787"
 }''';
 
 Future<void> main(List<String> argumentos) async {

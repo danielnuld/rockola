@@ -4,14 +4,14 @@ Daniel quiere las visualizaciones de Windows Media Player de XP en el reproducto
 Para que reaccionen a la música hay que saber qué suena en cada momento, y ni
 just_audio en el navegador ni AVPlayer en el iPhone entregan las muestras de audio.
 La prueba del issue #10 salió bien: una **huella** precalculada por canción (16
-bandas de frecuencia, 20 veces por segundo) cuesta 0.8 s y 69 KB en `nuld`, y en
+bandas de frecuencia, 20 veces por segundo) cuesta 0.8 s y 69 KB en casa, y en
 ella se ve el ritmo (la batería de *Reptilia*, la entrada del beat de *La Pelotona*).
 Issue #10.
 
 ## What Changes
 
 - **Servicio de huellas propio**, en el repo de Rockola (`servidor/huellas.py`: stdlib,
-  numpy y ffmpeg), corriendo como servicio en `nuld`. No depende de Giulia: cualquiera
+  numpy y ffmpeg), corriendo como servicio en casa. No depende de Giulia: cualquiera
   que use Rockola puede montarlo. Contrato en `docs/huellas.md`.
   - `GET /huella/{id}` devuelve la huella de una canción de Jellyfin; si no está
     calculada, la calcula (~1 s) y la guarda.
@@ -36,7 +36,7 @@ Issue #10.
 ## Impact
 
 - Nuevo `servidor/huellas.py` + `servidor/huellas.service` (systemd) en el repo.
-- En `nuld`: `python3-numpy` por apt, el servicio en el puerto 8788 (127.0.0.1 y
+- En casa: `python3-numpy` por apt, el servicio en el puerto 8788 (127.0.0.1 y
   Tailscale), la caché en `/srv/data/huellas` (se puede rehacer: no va al respaldo).
 - Nuevos `lib/visualizador.dart`; `lib/reproductor.dart`, `lib/ajustes.dart` y
   `lib/descargas.dart` se tocan.

@@ -1,7 +1,7 @@
 ## Why
 
 El lienzo promete "Mezclas para ti, armadas con lo que escuchas", y la radio de las
-fases 5 y 6 va a sacar sus canciones de ahí. Pero medido en el Jellyfin de `nuld`:
+fases 5 y 6 va a sacar sus canciones de ahí. Pero medido en el Jellyfin de casa:
 **12 canciones escuchadas de 622, 15 reproducciones en total y ningún favorito**.
 El motivo es de la propia app: Rockola nunca le avisa a Jellyfin de lo que suena,
 así que ni las mezclas ni "Volver a escuchar" ni el orden "Escuchados hace poco"

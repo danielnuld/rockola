@@ -1,6 +1,6 @@
 ## Context
 
-Medido en el Jellyfin 10.11.11 de `nuld`:
+Medido en el Jellyfin 10.11.11 de casa:
 - `GET /Audio/{id}/Lyrics` → `{"Metadata": {}, "Lyrics": [{"Text", "Start"?}]}`; `Start`
   en ticks (100 ns). 404 si no hay letra.
 - Hay letras sincronizadas ("Blah, blah, blah…" de Cartel de Santa: 68 líneas con

@@ -9,7 +9,7 @@ en el iPhone entregan las muestras de audio. Contrato en docs/huellas.md.
     python3 huellas.py --todas    # calcula toda la biblioteca de Jellyfin
     python3 huellas.py --check    # autocomprobacion, sin red ni Jellyfin
 
-Medido en nuld (i5-6500T): 0.8 s y 69 KB por cancion de 3:40.
+Medido en un i5-6500T: 0.8 s y 69 KB por cancion de 3:40.
 """
 import base64
 import http.server

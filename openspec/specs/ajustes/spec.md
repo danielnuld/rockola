@@ -9,8 +9,8 @@ el navegador, y un botón que lo prueba con `GET /locutor` y muestra el nombre d
 locutora o el error.
 
 #### Scenario: Configurar
-- **WHEN** se escribe `http://100.102.40.65:8787` y se prueba
-- **THEN** se lee "Responde: Giulia" y la URL queda guardada
+- **WHEN** se escribe `http://tu-servidor:8787` y se prueba
+- **THEN** se lee "Responde: <nombre del locutor>" y la URL queda guardada
 
 #### Scenario: Vacío
 - **WHEN** el campo está vacío
@@ -28,7 +28,7 @@ Ajustes SHALL tener el campo "Servidor de huellas" (una URL), en la web y en el 
 guardado al escribir y con una prueba que pide una huella y dice si responde.
 
 #### Scenario: Configurar
-- **WHEN** se escribe `http://100.102.40.65:8788` y se prueba
+- **WHEN** se escribe `http://tu-servidor:8788` y se prueba
 - **THEN** se lee "Responde" y la URL queda guardada
 
 #### Scenario: Vacío

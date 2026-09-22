@@ -42,5 +42,5 @@ python3 huellas.py --todas   # toda la biblioteca de una vez (~1 s por canción)
 python3 huellas.py           # servidor; lo nuevo se calcula al pedirlo
 ```
 
-Si el archivo cambia de tamaño, la huella se recalcula. `huellas.service` es la
-unidad de systemd que corre en `nuld`, con el script en `/srv/data/rockola/`.
+Si el archivo cambia de tamaño, la huella se recalcula. `huellas.service` es un
+ejemplo de unidad de systemd: cambia el usuario, las rutas y la IP antes de instalarla.

@@ -10,7 +10,7 @@ En el iPhone no se usa: allí la locutora corre en el propio teléfono.
 ## `GET /locutor`
 
 ```json
-{"nombre": "Giulia"}
+{"nombre": "Lola"}
 ```
 
 El nombre con el que la radio presenta al locutor.
@@ -59,5 +59,3 @@ mandar `Access-Control-Allow-Origin` para ese origen.
 - Si falla o no responde, sigue la música sin locutor.
 - La entrada de apertura espera como mucho 8 s antes de empezar la música.
 
-La implementación de referencia es la de Giulia, en `danielnuld/jarvis-m710q`
-(`bot/jarvis.py`, `locutor()`).

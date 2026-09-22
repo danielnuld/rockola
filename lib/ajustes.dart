@@ -18,7 +18,7 @@ class AjustesPage extends StatelessWidget {
             clave: 'locutor',
             titulo: 'SERVIDOR DEL LOCUTOR',
             ayuda: 'La voz de la radio en la web sale de aquí. Vacío, la radio suena solo con música.',
-            ejemplo: 'http://100.102.40.65:8787',
+            ejemplo: 'http://tu-servidor:8787',
             vacio: 'Sin servidor: la radio sonará solo con música.',
             probar: (url) async {
               final nombre = await Locutor(url).nombre();
@@ -30,7 +30,7 @@ class AjustesPage extends StatelessWidget {
             clave: 'huellas',
             titulo: 'SERVIDOR DE HUELLAS',
             ayuda: 'Con él, el visualizador se mueve con la música. Vacío, se mueve a su aire.',
-            ejemplo: 'http://100.102.40.65:8788',
+            ejemplo: 'http://tu-servidor:8788',
             vacio: 'Sin servidor: el visualizador no reaccionará a la música.',
             probar: (url) async => await probarHuellas(url) ? 'Responde.' : null,
           ),

@@ -3,7 +3,7 @@
 - [x] 1.1 `Jellyfin.empieza(id)` y `Jellyfin.termina(id, posicion)` (`/Sessions/Playing` y `/Stopped`)
 - [x] 1.2 `lib/escuchas.dart`: observador de `player` que manda fin e inicio al cambiar de canción, suma saltos (< 30 s sin terminar) y guarda y reintenta los fines fallidos en `SharedPreferences`
 - [x] 1.3 Tests con `BaseAudioHandler` y Jellyfin falso: fin con la posición, salto a los 12 s, dos vueltas de la misma canción, tres fines sin red que salen al volver
-- [x] 1.4 Comprobar contra `nuld` con la sesión de Daniel: escuchar una canción entera dos veces en Chrome y ver su contador subir en dos. Si no sube, plan B de design.md
+- [x] 1.4 Comprobar contra casa con la sesión de Daniel: escuchar una canción entera dos veces en Chrome y ver su contador subir en dos. Si no sube, plan B de design.md
 
 ## 2. Algoritmo
 

@@ -5,7 +5,7 @@ Ajustes SHALL tener el campo "Servidor de huellas" (una URL), en la web y en el 
 guardado al escribir y con una prueba que pide una huella y dice si responde.
 
 #### Scenario: Configurar
-- **WHEN** se escribe `http://100.102.40.65:8788` y se prueba
+- **WHEN** se escribe `http://tu-servidor:8788` y se prueba
 - **THEN** se lee "Responde" y la URL queda guardada
 
 #### Scenario: Vacío

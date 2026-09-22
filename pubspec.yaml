@@ -1,5 +1,5 @@
 name: rockola
-description: "A new Flutter project."
+description: "Reproductor de música para Jellyfin: iPhone, web y terminal."
 publish_to: 'none'
 version: 0.1.0+1
 

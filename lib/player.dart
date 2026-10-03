@@ -1,0 +1,136 @@
+import 'dart:math';
+
+import 'package:audio_service/audio_service.dart';
+import 'package:just_audio/just_audio.dart';
+
+/// El reproductor de la app. Tipo generico para que los tests pongan un
+/// BaseAudioHandler sin plugin de audio detras.
+late final AudioHandler player;
+
+/// Pone la cola y empieza por la cancion `i`.
+Future<void> reproducir(List<MediaItem> items, int i) async {
+  await player.updateQueue(items);
+  await player.skipToQueueItem(i);
+  await player.play();
+}
+
+/// La cola en aleatorio, empezando por una cualquiera.
+Future<void> reproducirAleatorio(List<MediaItem> items) async {
+  await player.updateQueue(items);
+  await player.setShuffleMode(AudioServiceShuffleMode.all);
+  await player.skipToQueueItem(Random().nextInt(items.length));
+  await player.play();
+}
+
+/// Repetir va de nada a toda la cola, a una sola cancion, y de vuelta a nada.
+AudioServiceRepeatMode siguienteRepeticion(AudioServiceRepeatMode m) => switch (m) {
+      AudioServiceRepeatMode.none => AudioServiceRepeatMode.all,
+      AudioServiceRepeatMode.all || AudioServiceRepeatMode.group => AudioServiceRepeatMode.one,
+      AudioServiceRepeatMode.one => AudioServiceRepeatMode.none,
+    };
+
+/// Puente entre just_audio (reproduce) y audio_service (pantalla de bloqueo,
+/// segundo plano, auriculares).
+class Player extends BaseAudioHandler with QueueHandler, SeekHandler {
+  Player() {
+    _p.playbackEventStream.map(_state).pipe(playbackState);
+    _p.currentIndexStream.listen((i) {
+      if (i != null && i < queue.value.length) mediaItem.add(queue.value[i]);
+    });
+  }
+
+  final _p = AudioPlayer();
+
+  /// Los `id` de los MediaItem son las URLs de stream.
+  @override
+  Future<void> updateQueue(List<MediaItem> items) async {
+    queue.add(items);
+    // Parar antes de cargar la cola nueva: sin esto, en el navegador seguia
+    // sonando la anterior ("Cambiar el rumbo" repetia la misma entrada).
+    await _p.stop();
+    await _p.setAudioSources([for (final m in items) AudioSource.uri(Uri.parse(m.id))]);
+  }
+
+  /// Meter algo a media reproduccion: las entradas de la locutora de la radio.
+  @override
+  Future<void> insertQueueItem(int index, MediaItem mediaItem) async {
+    queue.add([...queue.value]..insert(index, mediaItem));
+    await _p.insertAudioSource(index, AudioSource.uri(Uri.parse(mediaItem.id)));
+  }
+
+  /// audio_service no tiene volumen: va como accion propia, para la barra web.
+  @override
+  Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) async {
+    if (name == 'volumen') await _p.setVolume((extras?['v'] as num).toDouble());
+  }
+
+  @override
+  Future<void> setShuffleMode(AudioServiceShuffleMode shuffleMode) async {
+    final si = shuffleMode != AudioServiceShuffleMode.none;
+    if (si) await _p.shuffle();
+    await _p.setShuffleModeEnabled(si);
+    playbackState.add(_state(_p.playbackEvent)); // just_audio no emite evento por esto
+  }
+
+  @override
+  Future<void> setRepeatMode(AudioServiceRepeatMode repeatMode) async {
+    await _p.setLoopMode(switch (repeatMode) {
+      AudioServiceRepeatMode.none => LoopMode.off,
+      AudioServiceRepeatMode.one => LoopMode.one,
+      _ => LoopMode.all,
+    });
+    playbackState.add(_state(_p.playbackEvent));
+  }
+
+  /// Sin esperar a just_audio: su play() no vuelve hasta que la musica se pausa
+  /// o se para, y quien esperaba reproducir() (la radio al sintonizar) se quedaba
+  /// colgado toda la hora: el boton cargando y sin entradas de la locutora. Los
+  /// errores de reproduccion llegan igual por playbackEventStream.
+  @override
+  Future<void> play() async => _p.play().ignore();
+  @override
+  Future<void> pause() => _p.pause();
+  @override
+  Future<void> stop() => _p.stop();
+  @override
+  Future<void> seek(Duration position) => _p.seek(position);
+  @override
+  Future<void> skipToNext() => _p.seekToNext();
+  @override
+  Future<void> skipToPrevious() => _p.seekToPrevious();
+  /// Anuncia el elemento siempre: `currentIndexStream` solo avisa si cambia el
+  /// indice, y al cargar otra cola se pasa del 0 al 0 con otra cancion.
+  @override
+  Future<void> skipToQueueItem(int index) async {
+    await _p.seek(Duration.zero, index: index);
+    if (index < queue.value.length) mediaItem.add(queue.value[index]);
+  }
+
+  PlaybackState _state(PlaybackEvent e) => PlaybackState(
+        controls: [
+          MediaControl.skipToPrevious,
+          _p.playing ? MediaControl.pause : MediaControl.play,
+          MediaControl.skipToNext,
+        ],
+        systemActions: const {MediaAction.seek},
+        androidCompactActionIndices: const [0, 1, 2],
+        processingState: const {
+          ProcessingState.idle: AudioProcessingState.idle,
+          ProcessingState.loading: AudioProcessingState.loading,
+          ProcessingState.buffering: AudioProcessingState.buffering,
+          ProcessingState.ready: AudioProcessingState.ready,
+          ProcessingState.completed: AudioProcessingState.completed,
+        }[_p.processingState]!,
+        playing: _p.playing,
+        updatePosition: _p.position,
+        bufferedPosition: _p.bufferedPosition,
+        speed: _p.speed,
+        queueIndex: e.currentIndex,
+        shuffleMode: _p.shuffleModeEnabled ? AudioServiceShuffleMode.all : AudioServiceShuffleMode.none,
+        repeatMode: switch (_p.loopMode) {
+          LoopMode.off => AudioServiceRepeatMode.none,
+          LoopMode.one => AudioServiceRepeatMode.one,
+          LoopMode.all => AudioServiceRepeatMode.all,
+        },
+      );
+}

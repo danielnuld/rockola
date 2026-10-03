@@ -1,0 +1,21 @@
+# Huellas de Rockola: ejemplo. Cambia usuario, rutas e IP; luego:
+#   sudo cp huellas.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now huellas
+[Unit]
+Description=Huellas de Rockola (visualizador)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User=tu-usuario
+# Un archivo con JELLYFIN_URL=... y JELLYFIN_API_KEY=... (una clave de API de Jellyfin).
+EnvironmentFile=/etc/rockola/huellas.env
+Environment=HUELLAS_DIR=/srv/data/huellas
+# Una IP mas donde escuchar, ademas de 127.0.0.1 (p. ej. la de Tailscale). Nunca 0.0.0.0.
+Environment=HUELLAS_TAILSCALE=
+Environment=HUELLAS_ORIGENES=http://localhost:5000
+ExecStart=/usr/bin/python3 /opt/rockola/huellas.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

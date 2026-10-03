@@ -9,6 +9,7 @@ import 'ajustes.dart';
 import 'biblioteca.dart';
 import 'jellyfin.dart';
 import 'locutor.dart';
+import 'locutor_iphone.dart';
 import 'mezclas.dart';
 import 'player.dart';
 import 'tema.dart';

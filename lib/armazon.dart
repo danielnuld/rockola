@@ -12,7 +12,7 @@ import 'buscar.dart';
 import 'inicio.dart';
 import 'descargas.dart';
 import 'jellyfin.dart';
-import 'locutor.dart';
+import 'locutor_iphone.dart';
 import 'mezclas.dart';
 import 'player.dart';
 import 'radio.dart';

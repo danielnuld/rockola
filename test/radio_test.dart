@@ -12,6 +12,7 @@ import 'package:rockola/ajustes.dart';
 import 'package:rockola/mezclas.dart';
 import 'package:rockola/player.dart';
 import 'package:rockola/locutor.dart';
+import 'package:rockola/locutor_iphone.dart';
 import 'package:rockola/radio.dart';
 import 'package:rockola/tema.dart';
 import 'package:shared_preferences/shared_preferences.dart';

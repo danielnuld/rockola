@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'locutor.dart';
+import 'locutor_iphone.dart';
 import 'tema.dart';
 import 'visualizador.dart';
 

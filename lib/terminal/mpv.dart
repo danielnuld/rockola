@@ -81,8 +81,12 @@ class Mpv {
           (l) => f.writeString(l),
           () => f.read(4096),
           alCerrar: () async {
-            await f.close();
             p.kill();
+            // Si el quit se quedo sin respuesta, su lectura sigue pendiente y
+            // close lanza "An async operation is currently pending".
+            try {
+              await f.close();
+            } on FileSystemException catch (_) {}
             try {
               await vigia.delete();
             } catch (_) {}

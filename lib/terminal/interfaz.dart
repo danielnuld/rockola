@@ -246,16 +246,18 @@ class Interfaz {
     } finally {
       tic?.cancel();
       _borrarMensaje?.cancel();
-      await teclas?.cancel();
-      await ctrlC?.cancel();
-      await rep.cerrar();
-      stdout.write('\x1b[?25h\x1b[?1049l'); // la terminal como estaba
+      // Antes de soltar stdin: en Windows, cancelar su escucha cierra el handle y
+      // lineMode falla despues con "Controlador no valido".
       if (consola) {
         restaurarConsola(modo);
         stdin
           ..lineMode = true
           ..echoMode = true;
       }
+      await teclas?.cancel();
+      await ctrlC?.cancel();
+      await rep.cerrar();
+      stdout.write('\x1b[?25h\x1b[?1049l'); // la terminal como estaba
     }
   }
 

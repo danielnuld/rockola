@@ -139,3 +139,15 @@ gh workflow run windows.yml -f version=X.Y.Z   # el instalador de Windows
 ## Pendiente
 
 - CarPlay, cuando haya cuenta de Apple Developer.
+
+## Licencia
+
+El código es software libre bajo la [GPLv3](LICENSE): puedes usarlo, estudiarlo,
+modificarlo y hacer fork, siempre que lo que distribuyas siga bajo GPLv3 y con su
+código abierto.
+
+El nombre **Rockola** y su icono no están cubiertos por la licencia: un fork tiene que
+llevar otro nombre y otro icono. La versión de Rockola para el App Store la publica
+solo su autor.
+
+¿Quieres contribuir? Lee [CONTRIBUTING.md](CONTRIBUTING.md) antes de abrir un PR.

@@ -112,11 +112,21 @@ class Mpv {
 
   Future<Object?> _pedir(List<Object> comando) async {
     final id = ++_id;
-    await _escribir('${jsonEncode({'command': comando, 'request_id': id})}\n');
+    try {
+      await _escribir('${jsonEncode({'command': comando, 'request_id': id})}\n');
+    } on FileSystemException {
+      // Al salir, un tic que ya iba en camino escribe en la tuberia de un mpv muerto.
+      throw const MpvCerrado('tubería cerrada');
+    }
     while (true) {
       final i = _resto.indexOf(10);
       if (i < 0) {
-        final b = await _leer().timeout(const Duration(seconds: 5), onTimeout: () => throw const MpvCerrado('no contesta'));
+        final List<int> b;
+        try {
+          b = await _leer().timeout(const Duration(seconds: 5), onTimeout: () => throw const MpvCerrado('no contesta'));
+        } on FileSystemException {
+          throw const MpvCerrado('tubería cerrada');
+        }
         if (b.isEmpty) throw const MpvCerrado('tubería cerrada');
         _resto.addAll(b);
         continue;

@@ -69,6 +69,11 @@ void main() {
     await expectLater(f.mpv.estado(), throwsA(isA<MpvCerrado>()));
   });
 
+  test('mpv: escribir en la tuberia de un mpv muerto da MpvCerrado', () async {
+    final m = Mpv.conCanal((_) => throw const FileSystemException('writeFrom failed'), () async => <int>[]);
+    await expectLater(m.estado(), throwsA(isA<MpvCerrado>()));
+  });
+
   test('buscar mpv: el ajuste, el PATH o donde lo deja winget', () async {
     final dir = await Directory.systemTemp.createTemp('mpv');
     addTearDown(() => dir.delete(recursive: true));
